@@ -67,7 +67,7 @@ class Card < ApplicationRecord
     
     abilities.each do |ability|
       ability.effects.each_pair do |effect, args|
-        return args['amount'] if effect == 'max_in_deck'
+        return args if effect == 'max_in_deck'
       end
     end 
     return 4
