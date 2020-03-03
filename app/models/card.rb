@@ -29,12 +29,12 @@ class Card < ApplicationRecord
     ability.execute
   end
   
-  def tap
-    @tapped = true
+  def dap
+    @dapped = true
   end
   
-  def untap
-    @tapped = false
+  def undap
+    @dapped = false
   end
   
   def move(to_zone)
