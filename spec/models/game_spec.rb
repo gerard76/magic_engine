@@ -20,7 +20,6 @@ describe Game do
   describe '#play_card' do
     it 'returns false if the card can not be played' do
       card = build(:card)
-      raise card.inspect
       expect(game.play_card(card)).to be_falsey
     end
   end
