@@ -1,0 +1,3 @@
+class Turn < ApplicationRecord
+
+end
