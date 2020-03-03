@@ -11,18 +11,16 @@ class Zone
   def add(card_or_cards)
     card_or_cards=[card_or_cards] unless card_or_cards.is_a?(Array)
     card_or_cards.each do |card|
-      @cards << card
-      card.zone = self
+      cards << card
     end
   end
   
   def delete(card)
-    @cards.delete(card)
-    card.zone = nil
+    cards.delete(card)
   end
   
   def empty
-    @cards.each do |card|
+    cards.each do |card|
       delete(card)
     end
   end

@@ -40,6 +40,7 @@ class Card < ApplicationRecord
   def move(to_zone)
     @zone.delete self
     to_zone.add self
+    @zone = to_zone
   end
  
   def color

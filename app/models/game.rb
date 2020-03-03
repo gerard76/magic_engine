@@ -4,9 +4,9 @@ class Game
   attr_accessor :us, :them
   attr_accessor :stack,   # https://mtg.gamepedia.com/Stack
                 :command  # https://mtg.gamepedia.com/Command
-
+                
   attr_accessor :players, :active_player, :priority_player, :turn
-
+  
   attr_accessor :active_triggers
   
   workflow do
@@ -38,22 +38,22 @@ class Game
     state :cleanup do
       event :next_turn, transitions_to: :beginning
     end
-
+    
     on_entry do |phase|
       trigger "beginning_of_#{phase}"
     end
-
+    
     on_exit do |from, to|
       # 500.4 When a step or phase ends, any unused mana left in a player’s mana pool empties.
       @active_player.empty_mana_pool
       
       # 500.5 effects scheduled to last “until end of” that phase or step expire
       expire_effect(:end_of, from)
-
+      
       trigger "end_of_#{phase}"
     end
   end
-
+  
   def initialize(players)
     @turn    = 0
     @players = players
@@ -63,33 +63,39 @@ class Game
     
     @active_triggers = []
   end
-
+  
   def run
     while playing?
       @active_player.draw unless turn == 0
-
+      
       state_based_actions
-
+      
       next_turn!
     end
   end
-
+  
   def beginning
     player.untap
   end
-
+  
   def next_turn
-    @active_player = players[(players.index(active_player) + 1) % players.size]
+    active_player = players[(players.index(active_player) + 1) % players.size]
   end
-
+  
+  def switch_priority
+    # 704.3. Whenever a player would get priority, the game checks for any of the listed conditions for state-based actions,
+    check_state_based_actions
+    priority_player players[(players.index(priority_player) + 1) % players.size]
+  end
+  
   def check_state_based_actions
-    [@us, @them].each do |player|
+    players.each do |player|
       # 704.5a If a player has 0 or less life, that player loses the game.
       player.lose if player.life == 0
-
+      
       # 704.5c If a player has ten or more poison counters, that player loses the game.
       player.lose if player.poison_counter >= 10
-
+      
       [:hand, :library, :graveyard, :exile, :battlefield].each do |zone_name|
         zone = player.send(zone_name)
         legendaries = []
@@ -106,16 +112,16 @@ class Game
                          card.deathtouch_damage > 0)
               card.move(card.owner.graveyard) 
             end
-
+            
             # 704.5i If a planeswalker has loyalty 0, it’s put into its owner’s graveyard
             if card.types.include?('Planeswalker') && card.loyalty <= 0
               card.move(card.owner.graveyard)
             end
-
+            
             legendaries << card if card.supertypes.include?('Legendary')
           end
         end
-
+        
         # 704.5j If a player controls two or more legendary permanents with the same name, that player chooses one of them, and the rest are put into their owners’ graveyards.
         unless legendaries.uniq!.nil?
           # O(n^2) kan ook wel in O(n)

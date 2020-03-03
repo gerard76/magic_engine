@@ -35,9 +35,9 @@ class Player
   
   def draw(amount = 1)
     # this should be a styate based action
-    lose if @library.size < amount
+    lose if library.size < amount
     
-    cards = @library.pop(amount)
+    cards = library.pop(amount)
     cards.each do |card|
       card.add_default_abilities
       card.move hand
@@ -46,21 +46,21 @@ class Player
   end
   
   def mulligan
-    @mulligan_count += 1
-    @library = (library + hand).shuffle
-    @hand    = draw(starting_hand_size)
+    mulligan_count += 1
+    library = (library + hand).shuffle
+    hand    = draw(starting_hand_size)
     
     # ai: which cards to return?
-    @library.unshift *@hand.pop(mulligan_count)
+    library.unshift *hand.pop(mulligan_count)
   end
   
   def lose
-    @lost = true
+    lost = true
     raise "I lose"
   end
   
   def lost?
-    @lost
+    lost
   end
   
   def undap

@@ -19,8 +19,16 @@ describe Game do
   
   describe '#play_card' do
     it 'returns false if the card can not be played' do
-      card = build(:card)
+      card = build :card
       expect(game.play_card(card)).to be_falsey
+    end
+    
+    it 'moves the card to battlefield' do
+      card = p1.hand.first
+      expect(card.zone.name).to eql(:hand)
+      game.play_card(card)
+      
+      expect(card.zone.name).to eql(:battlefield)
     end
   end
 end
