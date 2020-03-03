@@ -143,7 +143,7 @@ class Game
   end
   
   def play_card(card)
-    return false unless @priority_player.can_i_haz?(card)
+    return false unless @priority_player.can_play?(card)
     card.move @priority_player.battlefield
     @active_triggers += card.triggers
   end
