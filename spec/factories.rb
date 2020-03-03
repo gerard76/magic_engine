@@ -1,11 +1,13 @@
 FactoryBot.define do
-  # factory :mana_pool do
-  # end
-  #
+  factory :mana_pool
+  factory :zone do
+    initialize_with { new(:foo) }
+  end
+
   TYPES=%w[Creature Instant Sorcery Artifact]
-  factory :card, class: "Card" do
+  factory :card do
     types { TYPES.sample(1 + (rand(10) == 0 ? 1 : 0)) }
-    name { 'foo' }
+    zone  { build :zone }
   end
   
   factory :deck do
@@ -14,5 +16,9 @@ FactoryBot.define do
         deck.cards.build(attributes_for(:card))
       end
     end
+  end
+  
+  factory :player do
+    initialize_with { new(build :deck) }
   end
 end
