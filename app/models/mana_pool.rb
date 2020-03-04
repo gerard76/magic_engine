@@ -9,6 +9,8 @@ class ManaPool
     mountain:  'R'
   }
   
+  delegate *(Hash.new.methods - Object.methods), to: :@pool
+  
   def initialize
     @pool = Hash[COLORS.values.map { |color| [color, 0] }]
   end
