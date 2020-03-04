@@ -10,9 +10,9 @@ class Ability < ApplicationRecord
   def pay_cost
     costs.each_pair do |cost, args|
       case cost
-      when :tap
+      when 'tap'
         card.tap_it
-      when :mana
+      when 'mana'
         card.owner.pay_mana(args[:color], args[:amount])
       end
     end
@@ -21,8 +21,8 @@ class Ability < ApplicationRecord
   def execute
     effects.each_pair do |effect, args|
       case effect
-      when :mana
-        card.owner.mana_pool.add(args[:color], args[:amount])
+      when 'mana'
+        card.controller.mana_pool.add(args['color'], args['amount'])
       end
     end
   end

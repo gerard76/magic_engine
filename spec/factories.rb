@@ -26,4 +26,8 @@ FactoryBot.define do
     initialize_with { new() }
     active_triggers { [] }
   end
+  
+  factory :ability do
+    card
+  end
 end
