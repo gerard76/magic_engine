@@ -40,7 +40,7 @@ describe Card do
     end
     
     it 'does not clear all the cards from the old zone' do
-      old_zone.add build :card
+      old_zone.add card
       card.move new_zone
       expect(old_zone.cards.size).to eql(1)
     end

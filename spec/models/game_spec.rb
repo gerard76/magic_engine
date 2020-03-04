@@ -25,11 +25,14 @@ describe Game do
       expect(game.play_card(card)).to be_falsey
     end
     
+    it 'moves the card from hand' do
+      expect{game.play_card(p1.hand.first)}.
+        to change{p1.hand.size}.from(7).to(6)
+    end
+    
     it 'moves the card to battlefield' do
-      card = p1.hand.first
-      game.play_card(card)
-      
-      expect(card.zone.name).to eql(:battlefield)
+      expect{game.play_card(p1.hand.first)}.
+        to change{p1.battlefield.size}.from(0).to(1)
     end
   end
 end

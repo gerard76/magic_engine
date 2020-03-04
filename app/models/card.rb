@@ -40,7 +40,7 @@ class Card < ApplicationRecord
   end
   
   def move(to_zone)
-    zone.delete self
+    zone.delete_at(zone.index(self) || zone.length)
     to_zone.add self
     zone = to_zone
   end
