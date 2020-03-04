@@ -10,8 +10,6 @@ end
 gem 'rails', '~> 5.0.7', '>= 5.0.7.2'
 # Use postgresql as the database for Active Record
 gem 'pg', '>= 0.18', '< 2.0'
-# Use Puma as the app server
-gem 'puma', '~> 3.12'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
@@ -32,21 +30,18 @@ group :development, :test do
   gem 'byebug', platform: :mri
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'rspec-rails'
 end
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> anywhere in the code.
   gem 'web-console', '>= 3.3.0'
   gem 'listen', '~> 3.0.5'
-
-  gem 'rspec-rails'
 end
 
 group :test do
-  gem 'rspec-rails'
   gem 'rspec-activemodel-mocks'
   gem 'rspec-collection_matchers'
   gem 'shoulda-matchers'
   gem 'factory_bot_rails'
-  
 end
