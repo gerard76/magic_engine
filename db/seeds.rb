@@ -25,8 +25,6 @@ end
 # Land:
 Card.where(types: '{Land}', supertypes: '{Basic}').order(:id).each do |card|
   puts "#{card.id} - #{card.subtypes}"
-  if card.subtypes.present?
-    color = ManaPool::COLORS[card.subtypes.first.downcase.to_sym]
-    card.abilities << Ability.new(cost: { tap: :self }, effects: { mana: { color: color, amount: 1 }})
-  end
+  color = card.color.first || 'C'
+  card.abilities << Ability.new(cost: { tap: :self }, effects: { mana: { color: card, amount: 1 }})
 end;true
