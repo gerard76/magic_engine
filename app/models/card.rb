@@ -19,11 +19,13 @@ class Card < ApplicationRecord
   end
   
   def tap_it
-    self.tapped = true
+    return false if tapped
     abilities.where("cost ->> 'tap' = 'self'" ).each(&:execute)
+    self.tapped = true
   end
   
   def untap
+    return false unless tapped
     self.tapped = false
     true # lets return succes
   end

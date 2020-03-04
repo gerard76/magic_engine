@@ -7,6 +7,21 @@ describe Card do
     expect(card.zone).to be_a(Zone)
   end
   
+  describe '#tap_it' do
+    it 'does not allow tapping of a tapped card' do
+      card.tap_it
+      expect(card.tap_it).to be_falsey
+    end
+  end
+  
+  
+  describe '#untap' do
+    it 'does not allow untapping of an untapped card' do
+      card.untap
+      expect(card.untap).to be_falsey
+    end
+  end
+  
   describe '#move' do
     let(:old_zone) { build :zone, name: :old_zone }
     let(:new_zone) { build :zone, name: :new_zone }
