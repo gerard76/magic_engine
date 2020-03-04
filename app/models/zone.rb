@@ -1,5 +1,5 @@
 class Zone
-  attr_reader :name, :cards
+  attr_accessor :name, :cards
   
   delegate *(Array.new.methods - Object.methods), to: :@cards
 
@@ -12,6 +12,7 @@ class Zone
     card_or_cards=[card_or_cards] unless card_or_cards.is_a?(Array)
     card_or_cards.each do |card|
       cards << card
+      card.zone = self
     end
   end
   

@@ -10,7 +10,7 @@ class Deck < ApplicationRecord
   end
   
   def size
-    card_count
+    deck_cards.size
   end
   
   def card_count

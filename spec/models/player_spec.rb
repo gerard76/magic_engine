@@ -2,10 +2,30 @@ require 'rails_helper'
 
 describe Player do
   let(:player) { build :player }
-  let(:card)   { build :card   }
+  
+  describe 'initialize' do
+    it 'has an opening hand' do
+      expect(player.hand.size).to be >= 0
+    end
+  end
+  
+  describe '#draw' do
+    it 'draws from library' do
+      library_card_count = player.library.size
+      player.draw
+      expect(player.library.size).to be < library_card_count
+    end
+    
+    it 'draws to hand' do
+      player.draw
+      expect(player.hand.size).to be > 0
+      expect(player.hand.first.zone.name).to eql(:hand)
+    end
+  end
   
   describe '#can_play?' do
-    let(:mana_pool) { build :mana_pool}
+    let(:mana_pool) { build :mana_pool }
+    let(:card)      { build :card      }
     
     before do
       allow(player).to receive(:mana_pool).and_return(mana_pool)

@@ -7,10 +7,8 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 # imoprt all cards. Takes a while
-sets = MTG::Set.all
-sets[50..-1].each do |set|
+MTG::Set.all.each do |set|
   puts "#{set.code}: #{set.name}"
-  next if ['KTK', '10E'].include? set.code
   MTG::Card.where(set: set.code).all.each do |c|
     attributes = Card.new.attributes.keys - %w[id card_type]
     card = Card.new

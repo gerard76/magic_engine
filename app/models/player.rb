@@ -30,6 +30,8 @@ class Player
     
     @lose = false
     library.add(deck.cards.shuffle)
+    library.each { |card| card.owner = self; card.controller = self }
+    
     draw(starting_hand_size)
   end
   
@@ -38,10 +40,7 @@ class Player
     lose if library.size < amount
     
     cards = library.pop(amount)
-    cards.each do |card|
-      card.add_default_abilities
-      card.move hand
-    end
+    cards.each { |card| card.move hand }
     cards
   end
   

@@ -21,4 +21,9 @@ FactoryBot.define do
   factory :player do
     initialize_with { new(build :deck) }
   end
+  
+  factory :game do
+    initialize_with { new() }
+    active_triggers { [] }
+  end
 end

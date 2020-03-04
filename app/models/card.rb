@@ -1,15 +1,17 @@
 class Card < ApplicationRecord
   attr_accessor :owner, :zone, :game
-  # attr_accessor :controller ?
-  attr_accessor :face_down, :tapped
+  attr_accessor :controller
+  attr_accessor :face_down, :dapped
   
   attr_accessor :damage, :deathtouch_damage
   
   has_many :triggers
   has_many :abilities
   
+  after_initialize :add_default_abilities
+  
   def add_default_abilities
-    types.each do |type|
+    types&.each do |type|
       case type
       when 'Land'
         if supertypes.include?('Basic')
@@ -30,17 +32,17 @@ class Card < ApplicationRecord
   end
   
   def dap
-    @dapped = true
+    dapped = true
   end
   
   def undap
-    @dapped = false
+    dapped = false
   end
   
   def move(to_zone)
-    @zone.delete self
+    zone.delete self
     to_zone.add self
-    @zone = to_zone
+    zone = to_zone
   end
  
   def color
@@ -53,10 +55,7 @@ class Card < ApplicationRecord
   end
   
   def playable?
-    # can I play?
-    zone.name == :hand &&
-    # can I pay?
-    payable?
+    controller.can_play? self
   end
   
   def playable_zones
@@ -73,6 +72,8 @@ class Card < ApplicationRecord
     end 
     return 4
   end
+  
+
 end
 
 # A:SP$ ChangeZone | Cost$ 1 B | Origin$ Graveyard | Destination$ Hand | TargetMin$ 0 | TargetMax$ 2 | TgtPrompt$ Choose target creature card in your graveyard | ValidTgts$ Creature.YouOwn | SpellDescription$ Return up to two target creature cards from your graveyard to your hand, then discard a card. | SubAbility$ DBDiscard

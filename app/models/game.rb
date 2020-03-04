@@ -133,38 +133,41 @@ class Game
   end
   
   def expire_effect(lasts, phase)
-    @active_effects.reject! do |e|
+    active_effects.reject! do |e|
       e.phase == phase && e.lasts == lasts
     end
   end
   
   def playing?
-    @players.reject(&:lost?).size > 1
+    playing = players.reject(&:lost?)
+    return playing.size > 1 if players.size > 1
+    playing.size == 1
   end
   
   def pass_priority
     # 704.3. Whenever a player would get priority, the game checks for any of the listed conditions for state-based actions
     check_state_based_actions
-    @priority_player = players[(players.index(priority_player) + 1) % players.size]
+    priority_player = players[(players.index(priority_player) + 1) % players.size]
   end
   
   def play_card(card)
-    return false unless @priority_player.can_play?(card)
-    card.move @priority_player.battlefield
-    @active_triggers += card.triggers
+    return false unless priority_player.can_play?(card)
+    
+    card.move priority_player.battlefield
+    # active_triggers += card.triggers
   end
   
   def activate_ability(card)
     # pretend a card only has 1 ability
     ability = card.abilities.first
     ability.pay_cost
-    @stack << ability
+    stack << ability
   end
   
   def trigger(name)
-    @active_triggers.filter(name).each do |trigger|
+    active_triggers.filter(name).each do |trigger|
       trigger.ability.owner = trigger.source.owner
-      @stack << trigger.ability # should actually be put on stack the next time a player receives priority
+      stack << trigger.ability # should actually be put on stack the next time a player receives priority
       
       # 603.3b If multiple abilities have triggered since the last time a player received priority, each player, in APNAP order, puts triggered abilities they control on the stack in any order they choose. (See rule 101.4.) Then the game once again checks for and resolves state-based actions until none are performed, then abilities that triggered during this process go on the stack. This process repeats until no new state-based actions are performed and no abilities trigger. Then the appropriate player gets priority.
     end
@@ -173,7 +176,7 @@ class Game
   def remove_triggers(triggers)
     triggers = [triggers] unless triggers.is_a? Array
     triggers.each do |trigger|
-      @active_triggers.delete trigger
+      active_triggers.delete trigger
     end
   end
 end
