@@ -11,7 +11,7 @@ class Ability < ApplicationRecord
     costs.each_pair do |cost, args|
       case cost
       when :tap
-        card.dap
+        card.tap_it
       when :mana
         card.owner.pay_mana(args[:color], args[:amount])
       end

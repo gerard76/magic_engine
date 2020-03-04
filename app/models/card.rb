@@ -1,7 +1,7 @@
 class Card < ApplicationRecord
   attr_accessor :owner, :zone, :game
   attr_accessor :controller
-  attr_accessor :face_down, :dapped
+  attr_accessor :face_down, :tapped
   
   attr_accessor :damage, :deathtouch_damage
   
@@ -31,12 +31,12 @@ class Card < ApplicationRecord
     ability.execute
   end
   
-  def dap
-    dapped = true
+  def tap_it
+    self.tapped = true
   end
   
-  def undap
-    dapped = false
+  def untap
+    self.tapped = false
   end
   
   def move(to_zone)

@@ -62,9 +62,9 @@ class Player
     lost
   end
   
-  def undap
+  def untap_all
     battlefield.each do |card|
-      card.undap
+      card.untap
     end
   end
   
