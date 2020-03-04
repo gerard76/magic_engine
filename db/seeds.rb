@@ -20,3 +20,13 @@ MTG::Set.all.each do |set|
   end
   sleep 5 # lets be civil about this
 end
+
+#### Vanilla abilities:
+# Land:
+Card.where(types: '{Land}', supertypes: '{Basic}').order(:id).each do |card|
+  puts "#{card.id} - #{card.subtypes}"
+  if card.subtypes.present?
+    color = ManaPool::COLORS[card.subtypes.first.downcase.to_sym]
+    card.abilities << Ability.new(cost: { tap: :self }, effects: { mana: { color: color, amount: 1 }})
+  end
+end;true

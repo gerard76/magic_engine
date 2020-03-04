@@ -8,19 +8,6 @@ class Card < ApplicationRecord
   has_many :triggers
   has_many :abilities
   
-  after_initialize :add_default_abilities
-  
-  def add_default_abilities
-    types&.each do |type|
-      case type
-      when 'Land'
-        if supertypes.include?('Basic')
-          Ability.new(cost: :tap, effects: { mana: { color: color, amount: 1 }})
-        end
-      end
-    end
-  end
-  
   def add_effect(trigger, effect, args)
     effects << Effect.new(trigger, effect, args)
   end
