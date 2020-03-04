@@ -74,7 +74,8 @@ class Player
 
   def can_play?(card)
     card.playable_zones.include?(card.zone.name) &&
-      mana_pool.can_pay?(card.mana_cost)
+      mana_pool.can_pay?(card.mana_cost) &&
+      card.controller == self
   end
   
   def pay_mana(color, amount)
