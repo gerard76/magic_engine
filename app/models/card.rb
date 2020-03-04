@@ -20,10 +20,12 @@ class Card < ApplicationRecord
   
   def tap_it
     self.tapped = true
+    abilities.where("cost ->> 'tap' = 'self'" ).each(&:execute)
   end
   
   def untap
     self.tapped = false
+    true # lets return succes
   end
   
   def move(to_zone)
