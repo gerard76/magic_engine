@@ -150,13 +150,6 @@ class Game
     priority_player = players[(players.index(priority_player) + 1) % players.size]
   end
   
-  def play_card(card)
-    return false unless priority_player.can_play?(card)
-    
-    card.move priority_player.battlefield
-    # active_triggers += card.triggers
-  end
-  
   def activate_ability(card)
     # pretend a card only has 1 ability
     ability = card.abilities.first
@@ -164,7 +157,7 @@ class Game
     stack << ability
   end
   
-  def trigger(name)
+  def trigger(name, args)
     active_triggers.filter(name).each do |trigger|
       trigger.ability.owner = trigger.source.owner
       stack << trigger.ability # should actually be put on stack the next time a player receives priority

@@ -18,21 +18,4 @@ describe Game do
       expect(game.playing?).to be_falsey
     end
   end
-  
-  describe '#play_card' do
-    it 'returns false if the card can not be played' do
-      card = build :card
-      expect(game.play_card(card)).to be_falsey
-    end
-    
-    it 'moves the card from hand' do
-      expect{game.play_card(p1.hand.first)}.
-        to change{p1.hand.size}.from(7).to(6)
-    end
-    
-    it 'moves the card to battlefield' do
-      expect{game.play_card(p1.hand.first)}.
-        to change{p1.battlefield.size}.from(0).to(1)
-    end
-  end
 end

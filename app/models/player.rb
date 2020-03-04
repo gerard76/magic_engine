@@ -78,6 +78,13 @@ class Player
       card.controller == self
   end
   
+  def play_card(card)
+    return false unless can_play?(card)
+    
+    card.move battlefield
+    # active_triggers += card.triggers
+  end
+  
   def pay_mana(color, amount)
     mana_pool.pay(color, amount)
   end
