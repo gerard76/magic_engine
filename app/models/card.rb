@@ -33,9 +33,9 @@ class Card < ApplicationRecord
     to_zone.add self
     zone = to_zone
   end
- 
-  def color
-    color_identity.map { |c| c.downcase.to_sym }
+  
+  def colors
+    color_identity
   end
   
   def to_s
