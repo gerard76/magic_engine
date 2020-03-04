@@ -1,17 +1,26 @@
 class ManaPool
   # Colorless, Black, Green, Blue, Red, White
-  COLORS = [:C, :B, :G, :U, :R, :W]
+  COLORS = {
+    colorless: 'C',
+    plains:    'W',
+    swamp:     'B',
+    forest:    'G',
+    island:    'U',
+    mountain:  'R'
+  }
   
   def initialize
-    @pool = Hash[COLORS.map { |color| [color, 0] }]
+    @pool = Hash[COLORS.values.map { |color| [color, 0] }]
   end
   
   def add(color, amount = 1)
+    color = color.to_s
     @pool[color] += amount if valid_color?(color)
     
   end
   
   def pay(color, amount = 1)
+    color = color.to_s
     @pool[color] -= amount if valid_color?(color)
   end
   
@@ -59,7 +68,7 @@ class ManaPool
     pay = {}
     mana_array.each do |color, amount|
       next if color.to_s.numeric?
-      next if color == :X
+      next if color == 'X'
       
       pay[color] = amount
     end
@@ -70,14 +79,14 @@ class ManaPool
     generic = 0
     mana_array.each do |color, amount|
       generic += color && next if color.to_s.numeric?
-      generic += x && next if color == :X
+      generic += x && next if color == 'X'
     end
     generic
   end
   
   def to_s
-    COLORS.each do |color|
-      puts "#{color.to_s}: #{pool[color] || 0}"
+    @pool.each_pair do |color, amount|
+      puts "#{color}: #{amount}"
     end
   end
   
@@ -90,11 +99,11 @@ class ManaPool
   def convert_mana_string(mana_string)
     # mana string is something like: {3}{B}{G}{U} or {X}{B}{G}{U}
     array = mana_string[1..-2].split('}{')
-    array.map { |a| a.numeric? ? a : a.to_sym }.tally
+    array.map { |a| a.numeric? ? a : a }.tally
   end
   
   def valid_color?(color)
-    return false unless COLORS.include?(color)
+    return false unless COLORS.values.include?(color)
     true
   end
 end
