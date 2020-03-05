@@ -83,8 +83,8 @@ class Player
   def declare_attacker(card, target)
     # 506.2. During the combat phase, the active player is the attacking player
     # creatures that player controls may attack
-    return false unless game.active_player == player &&
-      card.controller == player &&
+    return false unless game.active_player == self &&
+      card.controller == self &&
       card.is_creature? &&
       game.current_state == :declare_attackers
       

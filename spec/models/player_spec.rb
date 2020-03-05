@@ -74,4 +74,23 @@ describe Player do
         to change{player.battlefield.size}.from(0).to(1)
     end
   end
+  
+  describe '#declare_attacker' do
+    let(:planeswalker) { build :planeswalker                 }
+    let(:attacker)     { build :creature, controller: player }
+    let(:game)         { build :game, players: [player]      }
+    
+    before do
+      allow(player).to receive(:game).and_return(game)
+    end
+    
+    it 'returns true when  all planets align' do
+      game.send(:persist_workflow_state, :declare_attackers)
+      expect(player.declare_attacker(attacker, planeswalker)).to be_truthy
+    end
+    
+    it 'returns false when we are not in the declaring_attackers phase' do
+      expect(player.declare_attacker(attacker, planeswalker)).to be_falsey
+    end
+  end
 end

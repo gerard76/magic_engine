@@ -13,7 +13,15 @@ FactoryBot.define do
 
   TYPES=%w(creature instant aorcery artifact)
   factory :card do
-    types { TYPES.sample(1 + (rand(10) == 0 ? 1 : 0)) }
+    types { [] }
+    
+    factory :planeswalker do
+      types { [:planeswalker] }
+    end
+    
+    factory :creature do
+      types { [:creature] }
+    end
   end
   
   factory :deck do
@@ -37,7 +45,7 @@ FactoryBot.define do
       players { [build(:player)] }
     end
     
-    initialize_with { new(player) }
+    initialize_with { new(players) }
   end
   
   factory :ability do
