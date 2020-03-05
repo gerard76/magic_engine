@@ -28,6 +28,9 @@ class Player
     @maximum_hand_size  = DEFAULT_HAND_SIZE
     @life               = STARTING_LIFE
     
+
+    @cards_played_this_turn = []
+    
     @lose = false
     library.add(deck.cards.shuffle)
     library.each { |card| card.owner = self; card.controller = self }
@@ -75,18 +78,24 @@ class Player
   def can_play?(card)
     card.playable_zones.include?(card.zone.name) &&
       mana_pool.can_pay?(card.mana_cost) &&
-      card.controller == self
+      card.controller == self &&
+      (!card.is_land? || !!!@cards_played_this_turn.detect(&:is_land?))
   end
   
   def play_card(card)
     return false unless can_play?(card)
     
     card.move battlefield
+    @cards_played_this_turn << card
     # active_triggers += card.triggers
   end
   
   def pay_mana(color, amount)
     mana_pool.pay(color, amount)
+  end
+  
+  def cleanup
+    @cards_played_this_turn = []
   end
   
   def empty_mana_pool

@@ -64,6 +64,10 @@ class Game
     @active_triggers = []
   end
   
+  def cleanup
+    @active_player.cleanup
+  end
+  
   def run
     while playing?
       @active_player.draw unless turn == 0

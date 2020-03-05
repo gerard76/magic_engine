@@ -64,7 +64,9 @@ class Card < ApplicationRecord
     return 4
   end
   
-
+  def is_land?
+    types.include? 'Land'
+  end
 end
 
 # A:SP$ ChangeZone | Cost$ 1 B | Origin$ Graveyard | Destination$ Hand | TargetMin$ 0 | TargetMax$ 2 | TgtPrompt$ Choose target creature card in your graveyard | ValidTgts$ Creature.YouOwn | SpellDescription$ Return up to two target creature cards from your graveyard to your hand, then discard a card. | SubAbility$ DBDiscard
