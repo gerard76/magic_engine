@@ -10,10 +10,6 @@ class Card < ApplicationRecord
   
   after_initialize :set_default_states
   
-  def add_effect(trigger, effect, args)
-    effects << Effect.new(trigger, effect, args)
-  end
-  
   def activate_ability(ability)
     owner.pay(ability.costs)
     
