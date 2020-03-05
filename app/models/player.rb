@@ -7,7 +7,7 @@ class Player
   #zones
   attr_accessor :deck, :hand, :library, :graveyard, :exiled, :battlefield
   
-  attr_accessor :starting_hand_size, :maximum_hand_size, :life
+  attr_accessor :life
   attr_accessor :mulligan_count
   
   attr_accessor :poison_counter, :mana_pool, :lost
@@ -36,7 +36,7 @@ class Player
     library.add(deck.cards.shuffle)
     library.each { |card| card.owner = self; card.controller = self }
     
-    draw(starting_hand_size)
+    draw(@starting_hand_size)
   end
   
   def draw(amount = 1)
@@ -51,7 +51,7 @@ class Player
   def mulligan
     mulligan_count += 1
     library = (library + hand).shuffle
-    hand    = draw(starting_hand_size)
+    hand    = draw(@starting_hand_size)
     
     # ai: which cards to return?
     library.unshift *hand.pop(mulligan_count)
