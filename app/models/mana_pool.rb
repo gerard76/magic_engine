@@ -42,12 +42,16 @@ class ManaPool
     
     # pay generic
     generic = to_pay_generic(mana_array, x)
-    @pool.each do |color, amount|
-      amount = [generic, amount].min
-      pay(color, amount)
-      generic -= amount
+    
+    if generic > 0
+      # colorless is first in pool, so that is spend first
+      @pool.each_pair do |color, amount|
+        amount = [generic, amount].min
+        pay(color, amount)
+        generic -= amount
       
-      exit unless generic > 0
+        break unless generic > 0
+      end
     end
     true
   end
@@ -80,8 +84,8 @@ class ManaPool
   def to_pay_generic(mana_array, x)
     generic = 0
     mana_array.each do |color, amount|
-      generic += color && next if color.to_s.numeric?
-      generic += x && next if color == 'X'
+      (generic += color.to_i) && next if color.to_s.numeric?
+      (generic += x && next) if color == 'X'
     end
     generic
   end

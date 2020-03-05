@@ -24,7 +24,14 @@ describe ManaPool, type: :model do
   describe '#pay_mana' do
     it 'subtracts the mana from the pool' do
       mana_pool['B'] = 10
-      expect{mana_pool.pay_mana('{B}{B}')}.to change{ mana_pool['B'] }.by(-2)
+      expect{ mana_pool.pay_mana('{B}{B}') }.to change{ mana_pool['B'] }.by(-2)
+    end
+    
+    it 'favors colorless mana when paying generic' do
+      mana_pool['B'] = 10
+      mana_pool['C'] = 10
+      expect{ mana_pool.pay_mana('{3}') }.to change{ mana_pool['C'] }.by(-3)
+      expect(mana_pool['B']).to eql(10)
     end
   end
   
