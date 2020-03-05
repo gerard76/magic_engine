@@ -65,16 +65,13 @@ class Player
     lost
   end
   
-  def untap_all
+  def untap
     battlefield.each do |card|
       card.untap
+      card.sick = false
     end
   end
   
-  def cast(card)
-    mana_pool.pay_mana card.mana_cost
-  end
-
   def can_play?(card)
     card.playable_zones.include?(card.zone&.name) &&
       mana_pool.can_pay?(card.mana_cost) &&
@@ -87,6 +84,8 @@ class Player
     
     mana_pool.pay_mana(card.mana_cost)
     card.move battlefield
+    card.sick = true if card.is_creature?
+    
     @cards_played_this_turn << card
     # active_triggers += card.triggers
   end

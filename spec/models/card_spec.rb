@@ -2,10 +2,25 @@ require 'rails_helper'
 
 describe Card do
   let(:card) { build :card }
+
+  it 'has sane defaults' do
+    expect(card.tapped).to be_falsey
+    expect(card.sick).to be_falsey
+    expect(card.face_down).to be_falsey
+  end
   
   describe '#tap_it' do
+    it 'taps' do
+      expect{card.tap_it}.to change{card.tapped}.to(true).from(false)
+    end
+    
     it 'does not allow tapping of a tapped card' do
       card.tap_it
+      expect(card.tap_it).to be_falsey
+    end
+    
+    it 'does not allow tapping of a sick card' do
+      card.sick = true
       expect(card.tap_it).to be_falsey
     end
   end

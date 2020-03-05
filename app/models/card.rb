@@ -1,12 +1,14 @@
 class Card < ApplicationRecord
   attr_accessor :owner, :zone
   attr_accessor :controller
-  attr_accessor :face_down, :tapped
+  attr_accessor :face_down, :tapped, :sick
   
   attr_accessor :damage, :deathtouch_damage
   
   has_many :triggers
   has_many :abilities
+  
+  after_initialize :set_default_states
   
   def add_effect(trigger, effect, args)
     effects << Effect.new(trigger, effect, args)
@@ -19,7 +21,8 @@ class Card < ApplicationRecord
   end
   
   def tap_it
-    return false if tapped
+    return false if tapped || sick
+    
     abilities.where("cost ->> 'tap' = 'self'" ).each(&:execute)
     self.tapped = true
   end
@@ -72,6 +75,14 @@ class Card < ApplicationRecord
     end
     
     super
+  end
+  
+  private
+  
+  def set_default_states
+    self.sick      = false
+    self.tapped    = false
+    self.face_down = false
   end
 end
 
