@@ -3,10 +3,6 @@ require 'rails_helper'
 describe Card do
   let(:card) { build :card }
   
-  it 'has a default zone' do
-    expect(card.zone).to be_a(Zone)
-  end
-  
   describe '#tap_it' do
     it 'does not allow tapping of a tapped card' do
       card.tap_it

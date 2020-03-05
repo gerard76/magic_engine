@@ -10,7 +10,7 @@ class Zone
     @cards = []
   end
   
-  def << (card_or_cards)
+  def <<(card_or_cards)
     add card_or_cards
   end
   

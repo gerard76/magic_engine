@@ -76,7 +76,7 @@ class Player
   end
 
   def can_play?(card)
-    card.playable_zones.include?(card.zone.name) &&
+    card.playable_zones.include?(card.zone&.name) &&
       mana_pool.can_pay?(card.mana_cost) &&
       card.controller == self &&
       (!card.is_land? || !!!@cards_played_this_turn.detect(&:is_land?))

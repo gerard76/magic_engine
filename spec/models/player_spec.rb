@@ -25,7 +25,9 @@ describe Player do
   
   describe '#can_play?' do
     let(:mana_pool) { build :mana_pool }
-    let(:card)      { build :card      }
+
+    let(:zone)      { build :zone      }
+    let(:card)      { build :card, zone: zone }
     
     before do
       allow(player).to receive(:mana_pool).and_return(mana_pool)
