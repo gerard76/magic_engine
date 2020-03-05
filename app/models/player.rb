@@ -85,6 +85,7 @@ class Player
   def play_card(card)
     return false unless can_play?(card)
     
+    mana_pool.pay_mana(card.mana_cost)
     card.move battlefield
     @cards_played_this_turn << card
     # active_triggers += card.triggers
