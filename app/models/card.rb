@@ -1,5 +1,5 @@
 class Card < ApplicationRecord
-  attr_accessor :owner, :zone, :game
+  attr_accessor :owner, :zone
   attr_accessor :controller
   attr_accessor :face_down, :tapped
   

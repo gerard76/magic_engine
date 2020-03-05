@@ -21,7 +21,7 @@ class Ability < ApplicationRecord
   def execute
     effects.each_pair do |effect, args|
       case effect
-      when 'mana'
+      when 'mana' # mana abilities do not use the stack
         card.controller.mana_pool.add(args['color'], args['amount'])
       end
     end

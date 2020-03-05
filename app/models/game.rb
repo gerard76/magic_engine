@@ -64,10 +64,6 @@ class Game
     @active_triggers = []
   end
   
-  def cleanup
-    @active_player.cleanup
-  end
-  
   def run
     while playing?
       @active_player.draw unless turn == 0
@@ -78,18 +74,57 @@ class Game
     end
   end
   
-  def beginning
-    player.untap
+  def untap
+    puts "untap"
+    active_player.untap
+    next_phase!
+  end
+  
+  def upkeep
+    puts "upkeep"
+    active_player.upkeep
+    next_phase!
+  end
+  
+  def draw
+    puts "draw"
+    active_player.draw
+    
+    next_phase!
+  end
+  
+  def main1
+    puts "main1"
+    next_phase!
+  end
+  
+  def attack
+    puts "attack"
+    next_phase!
+  end
+  
+  def block
+    puts "block"
+    next_phase!
+  end
+  
+  def main2
+    puts "main2"
+    next_phase!
+  end
+  
+  def end_of_turn
+    puts "end of turn"
+    next_phase!
+  end
+  
+  def cleanup
+    @active_player.cleanup
   end
   
   def next_turn
+    puts "next turn"
     active_player = players[(players.index(active_player) + 1) % players.size]
-  end
-  
-  def switch_priority
-    # 704.3. Whenever a player would get priority, the game checks for any of the listed conditions for state-based actions,
-    check_state_based_actions
-    priority_player players[(players.index(priority_player) + 1) % players.size]
   end
   
   def check_state_based_actions
