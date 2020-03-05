@@ -64,8 +64,14 @@ class Card < ApplicationRecord
     return 4
   end
   
-  def is_land?
-    types.include? 'Land'
+  TYPES = %w[land creature instant]
+  def method_missing(method, *args, &block)
+    type = method[/^is_([a-z]+)\?/, 1]
+    if type && TYPES.include?(type)
+      return types.include? type.capitalize
+    end
+    
+    super
   end
 end
 

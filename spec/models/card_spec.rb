@@ -14,6 +14,17 @@ describe Card do
     end
   end
   
+  describe '#is_<type>?' do
+    it 'returns true when types includes <type>' do
+      card.types = ['Land']
+      expect(card.is_land?).to be_truthy
+    end
+    
+    it 'returns false when types does not include <type>' do
+      card.types = ['Creature']
+      expect(card.is_land?).to be_falsey
+    end
+  end
   
   describe '#untap' do
     it 'does not allow untapping of an untapped card' do
