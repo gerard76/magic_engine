@@ -3,6 +3,7 @@ class Player
   DEFAULT_HAND_SIZE = 7
   STARTING_LIFE = 20
   
+  attr_accessor :game
   #zones
   attr_accessor :deck, :hand, :library, :graveyard, :exiled, :battlefield
   

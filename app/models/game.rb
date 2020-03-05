@@ -58,6 +58,7 @@ class Game
   
   def initialize(players)
     @turn    = 0
+    players.each { |p| p.game = self }
     @players = players
     
     @active_player   = players.sample # the one that starts
