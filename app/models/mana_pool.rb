@@ -41,7 +41,7 @@ class ManaPool
     to_pay_color(mana_array).each { |color, amount| pay(color, amount) }
     
     # pay generic
-    generic = to_pay_generic(mana_array)
+    generic = to_pay_generic(mana_array, x)
     @pool.each do |color, amount|
       amount = [generic, amount].min
       pay(color, amount)

@@ -20,4 +20,12 @@ describe ManaPool, type: :model do
       expect(mana_pool.can_pay?("{B}{B}{R}{W}{W}{W}{W}{W}")).to be_truthy
     end
   end
+  
+  describe '#pay_mana' do
+    it 'subtracts the mana from the pool' do
+      mana_pool['B'] = 10
+      expect{mana_pool.pay_mana('{B}{B}')}.to change{ mana_pool['B'] }.by(-2)
+    end
+  end
+  
 end
