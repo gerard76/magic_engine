@@ -10,9 +10,13 @@
 MTG::Set.all.each do |set|
   puts "#{set.code}: #{set.name}"
   MTG::Card.where(set: set.code).all.each do |c|
-    attributes = Card.new.attributes.keys - %w[id card_type]
+    attributes = Card.new.attributes.keys - %w[id card_type types supertypes subtypes]
     card = Card.new
-    card.card_type = c.type
+    card.card_type   = c.type
+    card.types       = c.types.map(&:downcase)
+    card.supertypes  = c.supertypes.map(&:downcase)
+    card.subtypes    = c.subtypes.map(&:downcase)
+    
     attributes.each do |a|
       card.write_attribute(a, c.send(a))
     end
@@ -23,7 +27,7 @@ end
 
 #### Vanilla abilities:
 # Land:
-Card.where(types: '{Land}', supertypes: '{Basic}').order(:id).each do |card|
+Card.where(types: '{land}', supertypes: '{basic}').order(:id).each do |card|
   puts "#{card.id} - #{card.subtypes}"
   color = card.colors.first || 'C'
   card.abilities << Ability.new(cost: { tap: :self }, effects: { mana: { color: card, amount: 1 }})

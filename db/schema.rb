@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200301093030) do
+ActiveRecord::Schema.define(version: 20200305180945) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -32,9 +32,9 @@ ActiveRecord::Schema.define(version: 20200301093030) do
     t.string  "colors",         array: true
     t.string  "color_identity", array: true
     t.string  "card_type"
-    t.string  "types",          array: true
-    t.string  "supertypes",     array: true
-    t.string  "subtypes",       array: true
+    t.text    "types",          array: true
+    t.text    "supertypes",     array: true
+    t.text    "subtypes",       array: true
     t.string  "rarity"
     t.string  "text"
     t.string  "flavor"

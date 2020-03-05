@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe Deck do
   let(:deck) { build :deck }
-  let(:land) { build :card, types: ['Land'], supertypes: ['Basic'] }
+  let(:land) { build :card, types: ['land'], supertypes: ['basic'] }
   let(:creature) { build :card }
   
   describe 'validations' do

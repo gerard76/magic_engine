@@ -11,7 +11,7 @@ FactoryBot.define do
     initialize_with { new(player, name) }
   end
 
-  TYPES=%w[Creature Instant Sorcery Artifact]
+  TYPES=%w(creature instant aorcery artifact)
   factory :card do
     types { TYPES.sample(1 + (rand(10) == 0 ? 1 : 0)) }
   end

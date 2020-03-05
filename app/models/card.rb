@@ -57,7 +57,7 @@ class Card < ApplicationRecord
   end
   
   def max_in_deck
-    return 1000 if types.include?('Land') && supertypes.include?('Basic')
+    return 1000 if types.include?('land') && supertypes.include?('basic')
     
     abilities.each do |ability|
       ability.effects.each_pair do |effect, args|
@@ -71,18 +71,48 @@ class Card < ApplicationRecord
   def method_missing(method, *args, &block)
     type = method[/^is_([a-z]+)\?/, 1]
     if type && TYPES.include?(type)
-      return types.include? type.capitalize
+      return types.include? type
     end
     
     super
   end
   
+  def remove_type(type)
+    type = type.to_s
+    return false unless types.include? type
+    
+    # 506.4. A permanent is removed from combat if it’s a planeswalker that’s being attacked
+    # and stops being a planeswalker, 
+    # or stops being a creature.
+    # 506.4d A permanent that’s both a blocking creature and a planeswalker that’s being attacked
+    # is removed from combat if it stops being both a creature and a planeswalker.
+    if type == 'creature'
+      remove_from_combat unless types.include?('planeswalker') && attacked
+    elsif type == 'planeswalker' && attacked
+      remove_from_combat unless types.include?('creature') && blocking
+    end
+    
+    types.delete type
+  end
+  
   private
   
-  def set_default_states
-    self.sick      = false
-    self.tapped    = false
-    self.face_down = false
+  def remove_from_combat
+    # A creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature.
+    self.in_combat = false
+    self.attacking = false
+    self.blocking  = false
+    self.blocked   = false
+    self.unblocked = false
+    
+    # A planeswalker that’s removed from combat stops being attacked.
+    self.attacked  = false
+  end
+  
+  def set_default_state_values
+    STATES.each do |state|
+      self.send("#{state}=", false)
+    end
   end
 end
 

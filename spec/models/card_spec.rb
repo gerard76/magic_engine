@@ -27,12 +27,12 @@ describe Card do
   
   describe '#is_<type>?' do
     it 'returns true when types includes <type>' do
-      card.types = ['Land']
+      card.types = ['land']
       expect(card.is_land?).to be_truthy
     end
     
     it 'returns false when types does not include <type>' do
-      card.types = ['Creature']
+      card.types = ['creature']
       expect(card.is_land?).to be_falsey
     end
   end

@@ -140,12 +140,12 @@ class Game
         legendaries = []
         zone.each do |card|
           # 704.5d If a token is in a zone other than the battlefield, it ceases to exist
-          zone.delete(card) if card.types.include?('Token') && zone_name != :battlefield
+          zone.delete(card) if card.types.include?('token') && zone_name != :battlefield
           
           if zone_name == :battlefield
             # 704.5f If a creature has toughness 0 or less, it’s put into its owner’s graveyard
             # 704.5g If a creature has toughness greater than 0, and the total damage marked on it is greater than or equal to its toughness, that creature has been dealt lethal damage and is destroyed.
-            if card.types.include?('Creature') &&
+            if card.types.include?('creature') &&
                         (card.toughness <= 0 || 
                          card.damage >= card.toughness ||
                          card.deathtouch_damage > 0)
@@ -153,11 +153,11 @@ class Game
             end
             
             # 704.5i If a planeswalker has loyalty 0, it’s put into its owner’s graveyard
-            if card.types.include?('Planeswalker') && card.loyalty <= 0
+            if card.types.include?('planeswalker') && card.loyalty <= 0
               card.move(card.owner.graveyard)
             end
             
-            legendaries << card if card.supertypes.include?('Legendary')
+            legendaries << card if card.supertypes.include?('legendary')
           end
         end
         
