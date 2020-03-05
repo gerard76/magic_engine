@@ -82,4 +82,40 @@ describe Card do
       expect(old_zone.cards.size).to eql(1)
     end
   end
+  
+  describe '#remove_type' do
+    it 'returns false if the card is not that type' do
+      expect(card.remove_type(:foo)).to be_falsey
+    end
+    
+    it 'removes the type' do
+      card.types = [:foo]
+      expect{card.remove_type(:foo)}.to change{card.types.size}.by(-1)
+    end
+    
+    context 'remove creature from combat' do
+      it 'is no longer a creature' do
+        card.types = [:creature]
+        expect(card).to receive(:remove_from_combat)
+        
+        card.remove_type(:creature)
+      end
+    
+      it 'is no longer a planeswalker' do
+        card.types = [:planeswalker]
+        card.attacked = true
+        expect(card).to receive(:remove_from_combat)
+        
+        card.remove_type(:planeswalker)
+      end
+      
+      it 'is no longer a creature, but it is still a planes walker that is attacked' do
+        card.types    = [:creature, :planeswalker]
+        card.attacked = true
+        
+        expect(card).to_not receive(:remove_from_combat)
+        card.remove_type(:creature)
+      end
+    end
+  end
 end

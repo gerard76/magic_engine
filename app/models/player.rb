@@ -79,6 +79,23 @@ class Player
       (!card.is_land? || !!!@cards_played_this_turn.detect(&:is_land?))
   end
   
+  def declare_attacker(card, target)
+    # 506.2. During the combat phase, the active player is the attacking player
+    # creatures that player controls may attack
+    return false unless game.active_player == player &&
+      card.controller == player &&
+      card.is_creature? &&
+      game.current_state == :declare_attackers
+      
+    card.attack(target)
+  end
+  
+  def  declare_blocker(card, target)
+    return false unless game.current_state == :declare_blockers
+    
+    card.block(target)
+  end
+  
   def play_card(card)
     return false unless can_play?(card)
     

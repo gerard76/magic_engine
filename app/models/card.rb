@@ -1,14 +1,27 @@
 class Card < ApplicationRecord
+  
+  STATES = %i(
+    face_down
+    tapped
+    sick
+    attacking
+    attacked
+    blocking
+    blocked
+    unblocked
+  )
+  
   attr_accessor :owner, :zone
-  attr_accessor :controller
-  attr_accessor :face_down, :tapped, :sick
+  attr_reader :controller
+  
+  # states
+  attr_accessor *STATES
+  after_initialize :set_default_state_values
   
   attr_accessor :damage, :deathtouch_damage
   
   has_many :triggers
   has_many :abilities
-  
-  after_initialize :set_default_states
   
   def activate_ability(ability)
     owner.pay(ability.costs)
@@ -29,7 +42,16 @@ class Card < ApplicationRecord
     true # lets return succes
   end
   
+  def controller=(player)
+    # A permanent is removed from combat if its controller changes
+    remove_from_combat if player != controller
+    @controller = player
+  end
+  
   def move(to_zone)
+    # 506.4. A permanent is removed from combat if it leaves the battlefield
+    remove_from_combat if zone.name == :battlefield
+    
     zone.delete_at(zone.index(self) || zone.length)
     to_zone.add self
     zone = to_zone
@@ -78,8 +100,7 @@ class Card < ApplicationRecord
     return false unless types.include? type
     
     # 506.4. A permanent is removed from combat if it’s a planeswalker that’s being attacked
-    # and stops being a planeswalker, 
-    # or stops being a creature.
+    # and stops being a planeswalker, or stops being a creature.
     # 506.4d A permanent that’s both a blocking creature and a planeswalker that’s being attacked
     # is removed from combat if it stops being both a creature and a planeswalker.
     if type == 'creature'
@@ -91,11 +112,20 @@ class Card < ApplicationRecord
     types.delete type
   end
   
+  def attack(target)
+    self.attacking  = true
+    target.attacked = true if target.is_a?(Card) # planeswalker
+  end
+  
+  def block(target)
+    self.blocking  = true
+    target.blocked = true
+  end
+  
   private
   
   def remove_from_combat
     # A creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature.
-    self.in_combat = false
     self.attacking = false
     self.blocking  = false
     self.blocked   = false

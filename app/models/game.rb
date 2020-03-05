@@ -11,31 +11,34 @@ class Game
   workflow do
     # Untap, Upkeep, Draw, Main1, Declare Attackers, Declare Blockers, Main2, End of Turn, and Cleanup
     state :untap do
-      event :next_phase, transitions_to: :precombat
+      event :next_phase, transitions_to: :upkeep
     end
     state :upkeep do
-      event :next_phase, transitions_to: :combat
+      event :next_phase, transitions_to: :draw
     end
     state :draw do
-      event :next_phase, transitions_to: :postcombat
+      event :next_phase, transitions_to:  :main1
     end
     state :main1 do
-      event :next_phase, transitions_to: :ending
+      event :next_phase, transitions_to: :combat
     end
-    state :attack do
-      event :next_phase, transitions_to: :ending
+    state :beginning_of_combat do
+      event :next_phase, transitions_to:  :main2
     end
-    state :block do
-      event :next_phase, transitions_to: :ending
-    end
+    
+    state :declare_attackers
+    state :declare_blockers
+    state :combat_damage
+    state :end_of_combat
+    
     state :main2 do
-      event :next_phase, transitions_to: :ending
+      event :next_phase, transitions_to: :end_of_turn
     end
     state :end_of_turn do
-      event :next_phase, transitions_to: :ending
+      event :next_phase, transitions_to: :cleanup
     end
     state :cleanup do
-      event :next_turn, transitions_to: :beginning
+      event :next_turn, transitions_to: :untap
     end
     
     on_entry do |phase|
