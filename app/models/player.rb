@@ -13,11 +13,11 @@ class Player
   
   def initialize(deck)
     @deck           = deck
-    @graveyard      = Zone.new(:graveyard)
-    @exiled         = Zone.new(:exiled)
-    @battlefield    = Zone.new(:battlefield)
-    @hand           = Zone.new(:hand)
-    @library        = Zone.new(:library)
+    @graveyard      = Zone.new(self, :graveyard)
+    @exiled         = Zone.new(self, :exiled)
+    @battlefield    = Zone.new(self, :battlefield)
+    @hand           = Zone.new(self, :hand)
+    @library        = Zone.new(self, :library)
     
     @mulligan_count = 0
     
