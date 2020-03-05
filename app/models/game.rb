@@ -1,7 +1,6 @@
 class Game
   include Workflow
   
-  attr_accessor :us, :them
   attr_accessor :stack,   # https://mtg.gamepedia.com/Stack
                 :command  # https://mtg.gamepedia.com/Command
                 
