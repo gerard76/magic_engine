@@ -1,5 +1,7 @@
 class Card < ApplicationRecord
   
+  ### STATES:
+  
   STATES = %i(
     face_down
     tapped
@@ -11,28 +13,39 @@ class Card < ApplicationRecord
     unblocked
   )
   
-  attr_accessor :owner, :zone
-  attr_reader :controller
-  
-  # states
   attr_accessor *STATES
   after_initialize :set_default_state_values
   
+  STATES.each do |state|
+    define_method("#{state}?") { !!self.send(state) }
+  end
+  
+  #### TYPES:
+  
+  TYPES      = %w(land creature instant)
+  SUPERTYPES = %w(basic snow ongoing world legendary host)
+  
+  TYPES.each do |type|
+    define_method("is_#{type}?") { types.include? type }
+  end
+  
+  SUPERTYPES.each do |type|
+    define_method("is_#{type}?") { supertypes.include? type }
+  end
+  
+ 
+  
+  attr_reader  :controller
+  attr_accessor :owner, :zone
   attr_accessor :damage, :deathtouch_damage
   
   has_many :triggers
   has_many :abilities
   
-  def activate_ability(ability)
-    owner.pay(ability.costs)
-    
-    ability.execute
-  end
-  
   def tap_it
     return false if tapped || sick
     
-    abilities.where("cost ->> 'tap' = 'self'" ).each(&:execute)
+    abilities.triggered.where("cost ->> 'tap' = 'self'" ).each(&:execute) # triggered abilities
     self.tapped = true
   end
   
@@ -75,9 +88,9 @@ class Card < ApplicationRecord
   end
   
   def max_in_deck
-    return 1000 if types.include?('land') && supertypes.include?('basic')
+    return 1000 if is_land? && is_basic?
     
-    abilities.each do |ability|
+    abilities.static.each do |ability|
       ability.effects.each_pair do |effect, args|
         return args if effect == 'max_in_deck'
       end
@@ -85,14 +98,14 @@ class Card < ApplicationRecord
     return 4
   end
   
-  TYPES = %w[land creature instant]
-  def method_missing(method, *args, &block)
-    type = method[/^is_([a-z]+)\?/, 1]
-    if type && TYPES.include?(type)
-      return types.include? type
+  def haste?
+    abilities.static.each do |ability|
+      ability.effects.each_pair do |effect, args|
+        return args if effect == 'haste'
+      end
     end
     
-    super
+    false
   end
   
   def remove_type(type)
@@ -112,8 +125,10 @@ class Card < ApplicationRecord
     types.delete type
   end
   
+  ### COMBAT:
+  
   def attack(target)
-    self.attacking  = true
+    self.attacking  = target
     target.attacked = true if target.is_a?(Card) # planeswalker
   end
   

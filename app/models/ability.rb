@@ -1,13 +1,26 @@
 class Ability < ApplicationRecord
   belongs_to :card
   
+  scope :static,    -> { where(activation: :static)    }
+  scope :activated, -> { where(activation: :activated) }
+  scope :triggered, -> { where(activation: :triggered) }
+  
+  # 603.3c If a triggered ability is modal, its controller announces the mode choice when putting the ability on the stack. If one of the modes would be illegal (due to an inability to choose legal targets, for example), that mode can’t be chosen. If no mode is chosen, the ability is removed from the stack. (See rule 700.2.)
   attr_accessor :modal
-  attr_accessor :type # Activated, Triggered, and Static
   attr_accessor :trigger
+  
+  # cost for activated ability
   serialize :costs, JSON
   serialize :effects, JSON
+  serialize :duration, JSON
   
-  def pay_cost
+  # activated abilities
+  def activate
+    return false unless activation == :activated
+    pay && execute
+  end
+ 
+  def pay
     costs.each_pair do |cost, args|
       case cost
       when 'tap'

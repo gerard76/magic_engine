@@ -20,16 +20,30 @@ class Game
       event :next_phase, transitions_to:  :main1
     end
     state :main1 do
-      event :next_phase, transitions_to: :combat
-    end
-    state :beginning_of_combat do
-      event :next_phase, transitions_to:  :main2
+      event :next_phase, transitions_to: :beginning_of_combat
     end
     
-    state :declare_attackers
-    state :declare_blockers
-    state :combat_damage
-    state :end_of_combat
+    ## combat phase
+    state :beginning_of_combat do
+      event :next_phase, transitions_to: :declare_attackers
+    end
+    
+    state :declare_attackers do
+      event :next_phase, transitions_to: :declare_blockers
+    end
+    
+    state :declare_blockers do
+      event :next_phase, transitions_to: :combat_damage
+    end
+    
+    state :combat_damage do
+      event :next_phase, transitions_to: :end_of_combat
+    end
+    
+    state :end_of_combat do
+      event :next_phase, transitions_to: :main2
+    end
+    ##
     
     state :main2 do
       event :next_phase, transitions_to: :end_of_turn
@@ -77,6 +91,7 @@ class Game
     end
   end
   
+  ### Phases
   def untap
     puts "untap"
     active_player.untap
@@ -101,8 +116,13 @@ class Game
     next_phase!
   end
   
-  def attack
-    puts "attack"
+  def beginning_of_combat
+    # 507.1 Chose opponent. That player becomes the defending player.
+    # TODO
+    
+    # 507.2. The active player gets priority
+    self.priority_player = active_player
+    
     next_phase!
   end
   
@@ -190,13 +210,6 @@ class Game
     # 704.3. Whenever a player would get priority, the game checks for any of the listed conditions for state-based actions
     check_state_based_actions
     priority_player = players[(players.index(priority_player) + 1) % players.size]
-  end
-  
-  def activate_ability(card)
-    # pretend a card only has 1 ability
-    ability = card.abilities.first
-    ability.pay_cost
-    stack << ability
   end
   
   def trigger(name, args)

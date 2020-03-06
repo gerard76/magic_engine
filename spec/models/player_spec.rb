@@ -82,15 +82,28 @@ describe Player do
     
     before do
       allow(player).to receive(:game).and_return(game)
+      game.send(:persist_workflow_state, :declare_attackers)
     end
     
-    it 'returns true when  all planets align' do
-      game.send(:persist_workflow_state, :declare_attackers)
+    it 'returns true when all planets align' do
       expect(player.declare_attacker(attacker, planeswalker)).to be_truthy
     end
     
     it 'returns false when we are not in the declaring_attackers phase' do
+      game.send(:persist_workflow_state, :untap)
       expect(player.declare_attacker(attacker, planeswalker)).to be_falsey
+    end
+    
+    it 'returns false when creature has summoning sickness' do
+      attacker.sick = true
+      expect(player.declare_attacker(attacker, planeswalker)).to be_falsey
+    end
+    
+    it 'returns true when creature has summoning sickness and haste' do
+      ability  = create(:static_ability, effects: { haste: true })
+      attacker = create :creature, controller: player, sick: true, abilities: [ability]
+      
+      expect(player.declare_attacker(attacker, planeswalker)).to be_truthy
     end
   end
 end

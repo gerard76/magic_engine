@@ -84,9 +84,11 @@ class Player
     # 506.2. During the combat phase, the active player is the attacking player
     # creatures that player controls may attack
     return false unless game.active_player == self &&
+      game.current_state == :declare_attackers &&
       card.controller == self &&
       card.is_creature? &&
-      game.current_state == :declare_attackers
+      !card.tapped? &&
+      (!card.sick? || card.haste?)
       
     card.attack(target)
   end

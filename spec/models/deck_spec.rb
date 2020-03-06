@@ -17,9 +17,10 @@ describe Deck do
     end
     
     it 'allows more cards that have a larger max_in_deck ability' do
-      dwarves = build :card, name: 'Seven Dwarves'
-      dwarves.abilities.build(effects: { max_in_deck: 7 })
+      ability = create(:static_ability, effects: { max_in_deck: 7 })
+      dwarves = create :card, name: 'Seven Dwarves', abilities: [ability]
       5.times { deck.cards << dwarves }
+      
       expect(deck.valid?).to be_truthy
     end
   end

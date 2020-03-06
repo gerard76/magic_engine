@@ -50,6 +50,18 @@ FactoryBot.define do
   
   factory :ability do
     card
+    
+    factory :static_ability do
+      activation { :static }
+    end
+    
+    factory :triggered_ability do
+      activation { :triggered }
+    end
+    
+    factory :activated_ability do
+      activation { :activated }
+    end
   end
   
 end
