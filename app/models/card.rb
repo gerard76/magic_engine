@@ -11,8 +11,20 @@ class Card < ApplicationRecord
     blocking
     blocked
     unblocked
+    
     haste
+    unblockable
+    flying
+    reach
+    shadow
+    daunt
+    cant_block
+    
+    cant_be_attacked
   )
+  
+  # TODO
+  # think about 'cant_be_attacked' that is for planeswalkers and players only
   
   attr_accessor *STATES
   after_initialize :set_default_state_values
@@ -29,7 +41,7 @@ class Card < ApplicationRecord
   has_many :abilities
   
   def tap_it
-    return false if tapped || sick
+    return false if tapped || (sick && !haste)
     
     abilities.triggered.where("cost ->> 'tap' = 'self'" ).each(&:execute) # triggered abilities
     self.tapped = true
@@ -118,26 +130,50 @@ class Card < ApplicationRecord
   ### COMBAT:
   
   def attack(target)
+    return false unless is_creature?
+    return false if tapped
+    return false if sick && !haste
+    
     self.attacking  = target
     target.attacked = true if target.is_a?(Card) # planeswalker
+    
+    # 508.1f The active player taps the chosen creatures
+    tap_it
+    
+    # TODO
+    # trigger on declaring attacker
   end
   
   def block(target)
-    self.blocking  = true
+    return false if target.unblockable?
+    return false if blocking # max 1 block per card
+    return false if tapped # 509.1a The chosen creatures must be untapped
+    return false if target.flying && !(self.reach || self.flying)
+    return false unless target.shadow == self.shadow
+    return false if target.daunt && power <= 2
+    return false if cant_block
+    
+    self.blocking  = target
     target.blocked = true
+    
+    # TODO
+    # 702.129a Afflict is a triggered ability. “Afflict N” means “Whenever this creature becomes blocked
+    # defending player loses N life.”
+  end
+  
+  def end_of_combat
+    self.attacking = false
+    self.attacked  = false
+    self.blocking  = false
+    self.blocked   = false
+    self.unblocked = false
   end
   
   private
   
   def remove_from_combat
     # A creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature.
-    self.attacking = false
-    self.blocking  = false
-    self.blocked   = false
-    self.unblocked = false
-    
-    # A planeswalker that’s removed from combat stops being attacked.
-    self.attacked  = false
+    end_of_combat
   end
   
   def set_default_state_values

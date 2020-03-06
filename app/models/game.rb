@@ -33,6 +33,7 @@ class Game
     end
     
     state :declare_blockers do
+      event :skip_combat, transitions_to: :end_of_combat
       event :next_phase, transitions_to: :combat_damage
     end
     
@@ -122,6 +123,23 @@ class Game
     
     # 507.2. The active player gets priority
     self.priority_player = active_player
+    
+    next_phase!
+  end
+  
+  def declare_blockers
+    # 508.8. If no creatures are declared as attackers or put onto the battlefield attacking,
+    # skip the declare blockers and combat damage steps.
+    skip_combat! unless active_player.battlefield.find(&:attacking)
+    next_phase!
+  end
+  
+  def end_of_combat
+    # TODO
+    # 511.2. Abilities that trigger “at end of combat” trigger as the end of combat step begins.
+    # Effects that last “until end of combat” expire at the end of the combat phase.
+    
+    players.each(&:end_of_combat)
     
     next_phase!
   end

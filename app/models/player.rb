@@ -11,6 +11,7 @@ class Player
   attr_accessor :mulligan_count
   
   attr_accessor :poison_counter, :mana_pool, :lost
+  attr_accessor :cant_be_attacked
   
   def initialize(deck)
     @deck           = deck
@@ -29,7 +30,7 @@ class Player
     @maximum_hand_size  = DEFAULT_HAND_SIZE
     @life               = STARTING_LIFE
     
-
+    @cant_be_attacked = false
     @cards_played_this_turn = []
     
     @lose = false
@@ -83,20 +84,28 @@ class Player
   def declare_attacker(card, target)
     # 506.2. During the combat phase, the active player is the attacking player
     # creatures that player controls may attack
-    return false unless game.active_player == self &&
-      game.current_state == :declare_attackers &&
-      card.controller == self &&
-      card.is_creature? &&
-      !card.tapped? &&
-      (!card.sick? || card.haste?)
+    return false unless game.current_state == :declare_attackers
+    return false if game.active_player != self
+    return false if card.controller != self
+    return false if target.cant_be_attacked
       
     card.attack(target)
   end
   
   def declare_blocker(card, target)
     return false unless game.current_state == :declare_blockers
+    return false if card.controller != self
+    return false if game.active_player == self # active player is attacker not defender
+    
+    # TODO
+    # add cost to block to tally
+    # 509.1e If any of the costs require mana, the defending player then has a chance to activate mana abilities
     
     card.block(target)
+  end
+  
+  def end_of_combat
+    battlefield.each(&:end_of_combat)
   end
   
   def play_card(card)
