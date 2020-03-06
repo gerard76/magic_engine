@@ -10,11 +10,8 @@ FactoryBot.define do
     
     initialize_with { new(player, name) }
   end
-
-  TYPES=%w(creature instant aorcery artifact)
+  
   factory :card do
-    types { [] }
-    
     factory :planeswalker do
       types { [:planeswalker] }
     end

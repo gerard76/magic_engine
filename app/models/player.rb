@@ -93,7 +93,7 @@ class Player
     card.attack(target)
   end
   
-  def  declare_blocker(card, target)
+  def declare_blocker(card, target)
     return false unless game.current_state == :declare_blockers
     
     card.block(target)

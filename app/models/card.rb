@@ -19,22 +19,7 @@ class Card < ApplicationRecord
   STATES.each do |state|
     define_method("#{state}?") { !!self.send(state) }
   end
-  
-  #### TYPES:
-  
-  TYPES      = %w(land creature instant)
-  SUPERTYPES = %w(basic snow ongoing world legendary host)
-  
-  TYPES.each do |type|
-    define_method("is_#{type}?") { types.include? type }
-  end
-  
-  SUPERTYPES.each do |type|
-    define_method("is_#{type}?") { supertypes.include? type }
-  end
-  
- 
-  
+
   attr_reader  :controller
   attr_accessor :owner, :zone
   attr_accessor :damage, :deathtouch_damage
@@ -106,6 +91,20 @@ class Card < ApplicationRecord
     end
     
     false
+  end
+  
+  #### TYPES:
+  
+  def method_missing(method, *args, &block)
+    type = method[/^is_([a-z]+)\?/, 1]
+    if type
+      return true if types.include? type
+      return true if supertypes.include? type
+      return true if subtypes.include? type
+      return false
+    end
+    
+    super
   end
   
   def remove_type(type)

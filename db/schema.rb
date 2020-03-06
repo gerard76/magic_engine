@@ -28,15 +28,15 @@ ActiveRecord::Schema.define(version: 20200306085933) do
     t.string  "name"
     t.integer "multiverse_id"
     t.string  "layout"
-    t.string  "names",          array: true
+    t.string  "names",                       array: true
     t.string  "mana_cost"
     t.integer "cmc"
-    t.string  "colors",         array: true
-    t.string  "color_identity", array: true
+    t.string  "colors",                      array: true
+    t.string  "color_identity",              array: true
     t.string  "card_type"
-    t.text    "types",          array: true
-    t.text    "supertypes",     array: true
-    t.text    "subtypes",       array: true
+    t.text    "types",          default: [], array: true
+    t.text    "supertypes",     default: [], array: true
+    t.text    "subtypes",       default: [], array: true
     t.string  "rarity"
     t.string  "text"
     t.string  "flavor"
