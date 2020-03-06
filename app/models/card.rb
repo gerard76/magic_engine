@@ -11,6 +11,7 @@ class Card < ApplicationRecord
     blocking
     blocked
     unblocked
+    haste
   )
   
   attr_accessor *STATES
@@ -81,16 +82,6 @@ class Card < ApplicationRecord
       end
     end 
     return 4
-  end
-  
-  def haste?
-    abilities.static.each do |ability|
-      ability.effects.each_pair do |effect, args|
-        return args if effect == 'haste'
-      end
-    end
-    
-    false
   end
   
   #### TYPES:

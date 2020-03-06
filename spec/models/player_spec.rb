@@ -100,8 +100,8 @@ describe Player do
     end
     
     it 'returns true when creature has summoning sickness and haste' do
-      ability  = create(:static_ability, effects: { haste: true })
-      attacker = create :creature, controller: player, sick: true, abilities: [ability]
+      attacker.sick  = true
+      attacker.haste = true
       
       expect(player.declare_attacker(attacker, planeswalker)).to be_truthy
     end
