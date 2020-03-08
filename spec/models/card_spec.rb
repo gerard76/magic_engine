@@ -95,15 +95,15 @@ describe Card do
     
     context 'remove creature from combat' do
       it 'is no longer a creature' do
-        card.types = [:creature]
+        card = build :creature
         expect(card).to receive(:remove_from_combat)
         
         card.remove_type(:creature)
       end
     
       it 'is no longer a planeswalker' do
-        card.types = [:planeswalker]
-        card.attacked = true
+        card          = build :planeswalker
+        card.attacker = build :creature
         expect(card).to receive(:remove_from_combat)
         
         card.remove_type(:planeswalker)
@@ -111,11 +111,42 @@ describe Card do
       
       it 'is no longer a creature, but it is still a planes walker that is attacked' do
         card.types    = [:creature, :planeswalker]
-        card.attacked = true
+        card.attacker = build :creature
         
         expect(card).to_not receive(:remove_from_combat)
         card.remove_type(:creature)
       end
+    end
+  end
+  
+  describe '#attack' do
+    let(:player) { build :player }
+    
+    before do
+      card.types = ['creature']
+    end
+    
+    it 'sets attacking' do
+      card.attack(player)
+      expect(card.attacking).to eql(player)
+    end
+    
+    it 'taps the card' do
+      expect{card.attack(player)}.to change{card.tapped}.to(true)
+    end
+  end
+  
+  describe '#block' do
+    let(:player)   { build :player }
+    let(:attacker) { build :card, attacking: player }
+
+    it 'returns true when all is well' do
+      expect(card.block(attacker)).to be_truthy
+    end
+    
+    it 'sets blocking to target' do
+      card.block(attacker)
+      expect(card.blocking).to be attacker
     end
   end
 end

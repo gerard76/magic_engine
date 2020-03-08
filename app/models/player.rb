@@ -10,7 +10,7 @@ class Player
   attr_accessor :life
   attr_accessor :mulligan_count
   
-  attr_accessor :poison_counter, :mana_pool, :lost
+  attr_accessor :poison_counter, :mana_pool
   attr_accessor :cant_be_attacked
   
   def initialize(deck)
@@ -58,15 +58,6 @@ class Player
     library.unshift *hand.pop(mulligan_count)
   end
   
-  def lose
-    lost = true
-    raise "I lose"
-  end
-  
-  def lost?
-    lost
-  end
-  
   def untap
     battlefield.each do |card|
       card.untap
@@ -82,13 +73,17 @@ class Player
   end
   
   def declare_attacker(card, target)
+    # TODO
+    # if there is only 1 possible 'target' we could automatically pick that
+    
     # 506.2. During the combat phase, the active player is the attacking player
     # creatures that player controls may attack
     return false unless game.current_state == :declare_attackers
+    return false unless target.is_a?(Player) || target.is_planeswalker?
     return false if game.active_player != self
     return false if card.controller != self
     return false if target.cant_be_attacked
-      
+    
     card.attack(target)
   end
   
@@ -129,5 +124,16 @@ class Player
   
   def empty_mana_pool
     mana_pool.empty
+  end
+  
+  def assign_damage(power)
+    self.life -= power
+  end
+  
+  def dead?
+    # 704.5a If a player has 0 or less life, that player loses the game.
+    return true if life <= 0
+    # 704.5c If a player has ten or more poison counters, that player loses the game.
+    return true if poison_counter >= 10
   end
 end

@@ -106,4 +106,21 @@ describe Player do
       expect(player.declare_attacker(attacker, planeswalker)).to be_truthy
     end
   end
+  
+  describe '#declare_blocker' do
+    let(:blocking_player) { build :player }
+    let(:attacker)        { build :creature, attacking: blocking_player }
+    let(:blocker)         { build :creature, controller: blocking_player }
+    let(:game)            { build :game, players: [player, blocking_player] }
+    
+    before do
+      allow(blocking_player).to receive(:game).and_return(game)
+      game.send(:persist_workflow_state, :declare_blockers)
+      game.active_player = player
+    end
+    
+    it 'returns true when all planets align' do
+      expect(blocking_player.declare_blocker(blocker, attacker)).to be_truthy
+    end
+  end
 end

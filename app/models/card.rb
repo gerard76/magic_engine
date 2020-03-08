@@ -7,9 +7,9 @@ class Card < ApplicationRecord
     tapped
     sick
     attacking
-    attacked
+    attacker
     blocking
-    blocked
+    blocker
     unblocked
     
     haste
@@ -20,6 +20,11 @@ class Card < ApplicationRecord
     daunt
     cant_block
     
+    trample
+    double_strike
+    first_strike
+    deathtouch
+    
     cant_be_attacked
   )
   
@@ -27,7 +32,7 @@ class Card < ApplicationRecord
   # think about 'cant_be_attacked' that is for planeswalkers and players only
   
   attr_accessor *STATES
-  after_initialize :set_default_state_values
+  after_initialize :set_default_values
   
   STATES.each do |state|
     define_method("#{state}?") { !!self.send(state) }
@@ -119,9 +124,9 @@ class Card < ApplicationRecord
     # 506.4d A permanent that’s both a blocking creature and a planeswalker that’s being attacked
     # is removed from combat if it stops being both a creature and a planeswalker.
     if type == 'creature'
-      remove_from_combat unless types.include?('planeswalker') && attacked
-    elsif type == 'planeswalker' && attacked
-      remove_from_combat unless types.include?('creature') && blocking
+      remove_from_combat unless is_planeswalker? && attacker
+    elsif type == 'planeswalker' && attacker
+      remove_from_combat unless is_creature? && blocking
     end
     
     types.delete type
@@ -135,7 +140,7 @@ class Card < ApplicationRecord
     return false if sick && !haste
     
     self.attacking  = target
-    target.attacked = true if target.is_a?(Card) # planeswalker
+    target.attacker = self if target.is_a?(Card) # planeswalker
     
     # 508.1f The active player taps the chosen creatures
     tap_it
@@ -149,24 +154,84 @@ class Card < ApplicationRecord
     return false if blocking # max 1 block per card
     return false if tapped # 509.1a The chosen creatures must be untapped
     return false if target.flying && !(self.reach || self.flying)
-    return false unless target.shadow == self.shadow
     return false if target.daunt && power <= 2
     return false if cant_block
+    return false unless target.shadow == self.shadow
+    return false unless target.attacking
     
     self.blocking  = target
-    target.blocked = true
+    target.blocker = self
     
     # TODO
     # 702.129a Afflict is a triggered ability. “Afflict N” means “Whenever this creature becomes blocked
     # defending player loses N life.”
+    
+    true
+  end
+  
+  def assign_attack_damage
+    damage = current_power
+    if blocker # attacker is blocked
+      
+      # 510.1c A blocked creature assigns its combat damage to the creatures blocking it.
+      # If no creatures are currently blocking it, it assigns no combat damage.
+      if blocker.blocking == self # blocker is still blocking
+        damage -= assign_damage(blocker)
+      end
+    end
+    
+    if !blocker || trample
+      attacking.assign_damage(damage) # damage player or planeswalker
+    end
+  end
+   
+  def assign_block_damage
+    if blocking.attacking # attacker is still attacking player or planeswalker
+      assign_damage(blocking)
+    end
+  end
+  
+  def assign_damage(victim)
+    if victim.is_planeswalker?
+      victim.loyalty -= current_power
+    elsif victim.is_a?(Player)
+      victim.assign_damage(current_power)
+    else
+      damage_type = deathtouch? ? :deathtouch_damage : :damage
+      amount = [current_power, victim.current_toughness].min
+      victim.send("#{damage_type}=", amount)
+    end
+  end
+  
+  def lethal_damage?
+    return true if current_toughness <= 0
+    return true if damage >= current_toughness
+    return true if deathtouch_damage > 0
+    return true if is_planeswalker? && loyalty <= 0
+    
+    false
   end
   
   def end_of_combat
     self.attacking = false
-    self.attacked  = false
+    self.attacker  = false
     self.blocking  = false
-    self.blocked   = false
+    self.blocker   = false
     self.unblocked = false
+  end
+  
+  def current_power
+    # TODO
+    # this is the place to look at counters and such
+    # for now:
+    power.to_i
+  end
+  
+  def current_toughness
+    # TODO
+    # this is the place to look at counters and such
+    # for now:
+    toughness.to_i
   end
   
   private
@@ -176,10 +241,13 @@ class Card < ApplicationRecord
     end_of_combat
   end
   
-  def set_default_state_values
+  def set_default_values
     STATES.each do |state|
       self.send("#{state}=", false)
     end
+    
+    self.damage =0
+    self.deathtouch_damage = 0
   end
 end
 

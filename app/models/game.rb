@@ -44,7 +44,6 @@ class Game
     state :end_of_combat do
       event :next_phase, transitions_to: :main2
     end
-    ##
     
     state :main2 do
       event :next_phase, transitions_to: :end_of_turn
@@ -57,6 +56,7 @@ class Game
     end
     
     on_entry do |phase|
+      puts "Phase: #{phase}"
       trigger "beginning_of_#{phase}"
     end
     
@@ -72,6 +72,8 @@ class Game
   end
   
   def initialize(players)
+    players = [players] unless players.is_a?(Array)
+    
     @turn    = 0
     players.each { |p| p.game = self }
     @players = players
@@ -94,26 +96,22 @@ class Game
   
   ### Phases
   def untap
-    puts "untap"
     active_player.untap
     next_phase!
   end
   
   def upkeep
-    puts "upkeep"
     active_player.upkeep
     next_phase!
   end
   
   def draw
-    puts "draw"
     active_player.draw
     
     next_phase!
   end
   
   def main1
-    puts "main1"
     next_phase!
   end
   
@@ -128,10 +126,42 @@ class Game
   end
   
   def declare_blockers
-    # 508.8. If no creatures are declared as attackers or put onto the battlefield attacking,
+    # 508.8. If no creatures are declared as attackers or put onto the battlefield attacking
     # skip the declare blockers and combat damage steps.
     skip_combat! unless active_player.battlefield.find(&:attacking)
     next_phase!
+  end
+  
+  def combat_damage
+    attackers = active_player.battlefield.filter(&:attacking)
+    
+    attackers.each do |a|
+      blocker = a.blocker
+      if a.first_strike? || a.double_strike?
+        a.assign_attack_damage
+      elsif blocker.try(:first_strike?) || blocker.try(:double_strike?)
+        blocker.assign_block_damage
+      end
+    end
+    
+    check_state_based_actions
+    
+    attackers.each do |a|
+      next if a.lethal_damage?
+      
+      if !a.first_strike? || a.double_strike
+        a.assign_attack_damage
+      end
+      
+      blocker = a.blocker
+      next if !blocker || blocker.zone.name != :battlefield
+      
+      if !blocker.first_strike? || blocker.double_strike?
+        blocker.assign_block_damage
+      end
+    end
+    
+    check_state_based_actions
   end
   
   def end_of_combat
@@ -144,18 +174,11 @@ class Game
     next_phase!
   end
   
-  def block
-    puts "block"
-    next_phase!
-  end
-  
   def main2
-    puts "main2"
     next_phase!
   end
   
   def end_of_turn
-    puts "end of turn"
     next_phase!
   end
   
@@ -164,49 +187,39 @@ class Game
   end
   
   def next_turn
-    puts "next turn"
     active_player = players[(players.index(active_player) + 1) % players.size]
   end
   
   def check_state_based_actions
     players.each do |player|
-      # 704.5a If a player has 0 or less life, that player loses the game.
-      player.lose if player.life == 0
-      
-      # 704.5c If a player has ten or more poison counters, that player loses the game.
-      player.lose if player.poison_counter >= 10
-      
-      [:hand, :library, :graveyard, :exile, :battlefield].each do |zone_name|
+      [:hand, :library, :graveyard, :exiled, :battlefield].each do |zone_name|
         zone = player.send(zone_name)
         legendaries = []
         zone.each do |card|
           # 704.5d If a token is in a zone other than the battlefield, it ceases to exist
-          zone.delete(card) if card.types.include?('token') && zone_name != :battlefield
+          zone.delete(card) if card.is_token? && zone_name != :battlefield
           
           if zone_name == :battlefield
             # 704.5f If a creature has toughness 0 or less, it’s put into its owner’s graveyard
             # 704.5g If a creature has toughness greater than 0, and the total damage marked on it is greater than or equal to its toughness, that creature has been dealt lethal damage and is destroyed.
-            if card.types.include?('creature') &&
-                        (card.toughness <= 0 || 
-                         card.damage >= card.toughness ||
-                         card.deathtouch_damage > 0)
-              card.move(card.owner.graveyard) 
-            end
-            
-            # 704.5i If a planeswalker has loyalty 0, it’s put into its owner’s graveyard
-            if card.types.include?('planeswalker') && card.loyalty <= 0
+            if card.is_creature? && card.lethal_damage?
               card.move(card.owner.graveyard)
             end
             
-            legendaries << card if card.supertypes.include?('legendary')
+            # 704.5i If a planeswalker has loyalty 0, it’s put into its owner’s graveyard
+            if card.is_planeswalker? && card.loyalty <= 0
+              card.move(card.owner.graveyard)
+            end
+            
+            # count legendaries
+            legendaries << card if card.is_legendary?
           end
         end
         
         # 704.5j If a player controls two or more legendary permanents with the same name, that player chooses one of them, and the rest are put into their owners’ graveyards.
-        unless legendaries.uniq!.nil?
-          # O(n^2) kan ook wel in O(n)
-          duplicates = legendaries.select{|e| legendaries.count(e) > 1 }.uniq
-          puts "pick the Legendary to keep #{duplicates.map(&:name)}"
+        legenadaries = legendaries.tally
+        legenadaries.reject { |k,v| v < 1}.each do |legendary|
+          puts "remove one of the '#{legendary.name}' legendaries"
         end
       end
     end
@@ -219,9 +232,10 @@ class Game
   end
   
   def playing?
-    playing = players.reject(&:lost?)
-    return playing.size > 1 if players.size > 1
-    playing.size == 1
+    playing = players.reject(&:dead?)
+    return true if players.size == 1 && playing.size > 0
+    
+    playing.size > 1
   end
   
   def pass_priority
