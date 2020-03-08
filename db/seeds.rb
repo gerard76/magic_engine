@@ -10,6 +10,7 @@
 MTG::Set.all.each do |set|
   puts "#{set.code}: #{set.name}"
   MTG::Card.where(set: set.code).all.each do |c|
+    next if ['UST', 'UNH'].incluce?(set.code)
     attributes = Card.new.attributes.keys - %w[id card_type types supertypes subtypes]
     card = Card.new
     card.card_type   = c.type
