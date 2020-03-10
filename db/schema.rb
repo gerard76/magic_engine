@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200306085933) do
+ActiveRecord::Schema.define(version: 20200309064958) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 20200306085933) do
   create_table "abilities", force: :cascade do |t|
     t.integer "card_id"
     t.json    "cost"
-    t.json    "effects"
+    t.json    "effect"
     t.string  "activation"
     t.json    "duration"
     t.index ["card_id"], name: "index_abilities_on_card_id", using: :btree
