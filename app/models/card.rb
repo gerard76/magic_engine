@@ -234,6 +234,10 @@ class Card < ApplicationRecord
     toughness.to_i
   end
   
+  def strikes_first?
+    first_strike? || double_strike?
+  end
+  
   private
   
   def remove_from_combat
@@ -249,6 +253,7 @@ class Card < ApplicationRecord
     self.damage =0
     self.deathtouch_damage = 0
   end
+  
 end
 
 # A:SP$ ChangeZone | Cost$ 1 B | Origin$ Graveyard | Destination$ Hand | TargetMin$ 0 | TargetMax$ 2 | TgtPrompt$ Choose target creature card in your graveyard | ValidTgts$ Creature.YouOwn | SpellDescription$ Return up to two target creature cards from your graveyard to your hand, then discard a card. | SubAbility$ DBDiscard

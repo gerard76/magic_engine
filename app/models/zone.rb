@@ -1,12 +1,10 @@
 class Zone
-  attr_accessor :name, :cards, :owner
+  attr_accessor :name, :cards
   
   delegate *(Array.new.methods - Object.methods), to: :@cards
   
-  def initialize(player, name)
+  def initialize(name)
     @name  = name
-    @owner = player
-    
     @cards = []
   end
   
@@ -19,7 +17,6 @@ class Zone
     card_or_cards.each do |card|
       cards << card
       card.zone = self
-      card.controller = owner
     end
   end
   

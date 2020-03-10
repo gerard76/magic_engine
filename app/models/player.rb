@@ -15,11 +15,10 @@ class Player
   
   def initialize(deck)
     @deck           = deck
-    @graveyard      = Zone.new(self, :graveyard)
-    @exiled         = Zone.new(self, :exiled)
-    @battlefield    = Zone.new(self, :battlefield)
-    @hand           = Zone.new(self, :hand)
-    @library        = Zone.new(self, :library)
+    @graveyard      = PlayerZone.new(self, :graveyard)
+    @exiled         = PlayerZone.new(self, :exiled)
+    @hand           = PlayerZone.new(self, :hand)
+    @library        = PlayerZone.new(self, :library)
     
     @mulligan_count = 0
     
@@ -107,7 +106,7 @@ class Player
     return false unless can_play?(card)
     
     mana_pool.pay_mana(card.mana_cost)
-    card.move battlefield
+    card.move game.battlefield
     card.sick = true if card.is_creature?
     
     @cards_played_this_turn << card
@@ -128,6 +127,10 @@ class Player
   
   def assign_damage(power)
     self.life -= power
+  end
+  
+  def battlefield
+    game.battlefield.filter { |c| c.controller == self }
   end
   
   def dead?

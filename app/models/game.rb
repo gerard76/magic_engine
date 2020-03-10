@@ -1,8 +1,9 @@
 class Game
   include Workflow
   
-  attr_accessor :stack,   # https://mtg.gamepedia.com/Stack
-                :command  # https://mtg.gamepedia.com/Command
+  attr_accessor :battlefield,
+                :stack,  # https://mtg.gamepedia.com/Stack
+                :command # https://mtg.gamepedia.com/Command
                 
   attr_accessor :players, :active_player, :priority_player, :turn
   
@@ -82,6 +83,7 @@ class Game
     @priority_player = @active_player
     
     @active_triggers = []
+    @battlefield = Zone.new(:battlefield)
   end
   
   def run
@@ -133,11 +135,10 @@ class Game
   end
   
   def combat_damage
-    attackers = active_player.battlefield.filter(&:attacking)
-    
+    attackers = battlefield.filter(&:attacking)
     attackers.each do |a|
       blocker = a.blocker
-      if a.first_strike? || a.double_strike?
+      if a.strikes_first?
         a.assign_attack_damage
       elsif blocker.try(:first_strike?) || blocker.try(:double_strike?)
         blocker.assign_block_damage
@@ -149,14 +150,14 @@ class Game
     attackers.each do |a|
       next if a.lethal_damage?
       
-      if !a.first_strike? || a.double_strike
+      if !a.strikes_first?
         a.assign_attack_damage
       end
       
       blocker = a.blocker
       next if !blocker || blocker.zone.name != :battlefield
       
-      if !blocker.first_strike? || blocker.double_strike?
+      if !blocker.strikes_first?
         blocker.assign_block_damage
       end
     end
@@ -191,35 +192,39 @@ class Game
   end
   
   def check_state_based_actions
+    # we need to dup this array because we're deleting
+    # elements from it when moving cards to another zone
+    battlefield.cards.dup.each do |card|
+      # 704.5f If a creature has toughness 0 or less, it’s put into its owner’s graveyard
+      # 704.5g If a creature has toughness greater than 0, and the total damage marked on it
+      # is greater than or equal to its toughness, that creature has been dealt lethal damage and is destroyed.
+      if card.is_creature? && card.lethal_damage?
+        card.move(card.owner.graveyard)
+      end
+      
+      # 704.5i If a planeswalker has loyalty 0, it’s put into its owner’s graveyard
+      if card.is_planeswalker? && card.loyalty <= 0
+        card.move(card.owner.graveyard)
+      end
+    end
+    
+    # 704.5j If a player controls two or more legendary permanents with the same name
+    # that player chooses one of them, and the rest are put into their owners’ graveyards.
     players.each do |player|
-      [:hand, :library, :graveyard, :exiled, :battlefield].each do |zone_name|
+      legendaries = player.battlefield.filter(&:is_legendary?)
+      legendaries = legendaries.tally
+      
+      legendaries.reject { |legendary, count| count < 1}.each do |legendary|
+        puts "remove one of the '#{legendary.name}' legendaries"
+      end
+    end
+    
+    players.each do |player|
+      [:hand, :library, :graveyard, :exiled].each do |zone_name|
         zone = player.send(zone_name)
-        legendaries = []
         zone.each do |card|
           # 704.5d If a token is in a zone other than the battlefield, it ceases to exist
-          zone.delete(card) if card.is_token? && zone_name != :battlefield
-          
-          if zone_name == :battlefield
-            # 704.5f If a creature has toughness 0 or less, it’s put into its owner’s graveyard
-            # 704.5g If a creature has toughness greater than 0, and the total damage marked on it is greater than or equal to its toughness, that creature has been dealt lethal damage and is destroyed.
-            if card.is_creature? && card.lethal_damage?
-              card.move(card.owner.graveyard)
-            end
-            
-            # 704.5i If a planeswalker has loyalty 0, it’s put into its owner’s graveyard
-            if card.is_planeswalker? && card.loyalty <= 0
-              card.move(card.owner.graveyard)
-            end
-            
-            # count legendaries
-            legendaries << card if card.is_legendary?
-          end
-        end
-        
-        # 704.5j If a player controls two or more legendary permanents with the same name, that player chooses one of them, and the rest are put into their owners’ graveyards.
-        legenadaries = legendaries.tally
-        legenadaries.reject { |k,v| v < 1}.each do |legendary|
-          puts "remove one of the '#{legendary.name}' legendaries"
+          zone.delete(card) if card.is_token?
         end
       end
     end

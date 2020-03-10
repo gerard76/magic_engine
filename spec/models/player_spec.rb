@@ -2,6 +2,11 @@ require 'rails_helper'
 
 describe Player do
   let(:player) { build :player }
+  let(:game)   { build :game, players: [player] }
+  
+  before do
+    allow(player).to receive(:game).and_return game
+  end
   
   describe 'initialize' do
     it 'has an opening hand' do
@@ -71,7 +76,7 @@ describe Player do
     
     it 'moves the card to battlefield' do
       expect{player.play_card(player.hand.first)}.
-        to change{player.battlefield.size}.from(0).to(1)
+        to change{game.battlefield.size}.from(0).to(1)
     end
   end
   

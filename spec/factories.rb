@@ -4,6 +4,14 @@ FactoryBot.define do
   
   factory :zone do
     transient do
+      name   { :foo          }
+    end
+    
+    initialize_with { new(name) }
+  end
+  
+  factory :player_zone do
+    transient do
       player { build :player }
       name   { :foo          }
     end
