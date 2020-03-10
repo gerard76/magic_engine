@@ -1,10 +1,14 @@
 class Card < ApplicationRecord
+  include Stackable
   
   ### STATES:
   
   STATES = %i(
     face_down
     tapped
+    flipped
+    phased_out
+    
     sick
     attacking
     attacker
@@ -92,11 +96,12 @@ class Card < ApplicationRecord
   def max_in_deck
     return 1000 if is_land? && is_basic?
     
-    abilities.static.each do |ability|
-      ability.effects.each_pair do |effect, args|
-        return args if effect == 'max_in_deck'
-      end
-    end 
+    ability = abilities.find do |a|
+      a.activation == 'static' &&
+      a.effect['name'] == 'max_in_deck'
+    end
+    
+    return ability.effect['amount'] if ability
     return 4
   end
   
@@ -221,14 +226,16 @@ class Card < ApplicationRecord
   
   def current_power
     # TODO
-    # this is the place to look at counters and such
+    # this is the place to look at counters and static abilities
+    # minding layers and timestamps
     # for now:
     power.to_i
   end
   
   def current_toughness
     # TODO
-    # this is the place to look at counters and such
+    # this is the place to look at counters and and static abilities
+    # minding layers and timestamps
     # for now:
     toughness.to_i
   end
@@ -245,6 +252,7 @@ class Card < ApplicationRecord
   end
   
   def set_default_values
+    # 110.5b Permanents enter the battlefield untapped, unflipped, face up, and phased in
     STATES.each do |state|
       self.send("#{state}=", false)
     end

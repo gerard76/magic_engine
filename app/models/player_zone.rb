@@ -7,12 +7,9 @@ class PlayerZone < Zone
     super(name)
   end
   
-  def add(card_or_cards)
-    card_or_cards=[card_or_cards] unless card_or_cards.is_a?(Array)
-    card_or_cards.each do |card|
-      card.controller = owner
-    end
+  def add(card)
+    card.controller = owner
     
-    super card_or_cards
+    super card
   end
 end

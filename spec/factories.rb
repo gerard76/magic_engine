@@ -19,6 +19,13 @@ FactoryBot.define do
     initialize_with { new(player, name) }
   end
   
+  factory :stack do
+    transient do
+      game   { build :game }
+    end
+    intialize_with { new(game) }
+  end
+  
   factory :card do
     factory :planeswalker do
       types { [:planeswalker] }
@@ -26,6 +33,14 @@ FactoryBot.define do
     
     factory :creature do
       types { [:creature] }
+    end
+    
+    factory :land do
+      types { [:land] }
+    end
+    
+    factory :instant do
+      types { [:instant] }
     end
   end
   

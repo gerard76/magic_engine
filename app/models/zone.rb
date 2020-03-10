@@ -8,16 +8,13 @@ class Zone
     @cards = []
   end
   
-  def <<(card_or_cards)
-    add card_or_cards
+  def <<(card)
+    add card
   end
   
-  def add(card_or_cards)
-    card_or_cards=[card_or_cards] unless card_or_cards.is_a?(Array)
-    card_or_cards.each do |card|
-      cards << card
-      card.zone = self
-    end
+  def add(card) 
+    cards << card
+    card.zone = self
   end
   
   def delete(card)
@@ -32,5 +29,13 @@ class Zone
   
   def to_s
     cards.each &:to_s
+  end
+  
+  %w(creature artifact enchantment land planeswalker).each do |type|
+    define_method("#{type}s") do
+      cards.filter do |card|
+        card.send("is_#{type}?")
+      end
+    end
   end
 end

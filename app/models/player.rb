@@ -33,8 +33,8 @@ class Player
     @cards_played_this_turn = []
     
     @lose = false
-    library.add(deck.cards.shuffle)
-    library.each { |card| card.owner = self; card.controller = self }
+    
+    deck.cards.shuffle.each { |card| library.add(card) }
     
     draw(@starting_hand_size)
   end
@@ -102,12 +102,17 @@ class Player
     battlefield.each(&:end_of_combat)
   end
   
-  def play_card(card)
+  def play_card(card, *args)
     return false unless can_play?(card)
     
     mana_pool.pay_mana(card.mana_cost)
-    card.move game.battlefield
-    card.sick = true if card.is_creature?
+    
+    if card.is_land?
+      card.move game.battlefield
+    else
+      card.args = args
+      card.move game.stack
+    end
     
     @cards_played_this_turn << card
     # active_triggers += card.triggers

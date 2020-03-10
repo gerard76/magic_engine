@@ -79,6 +79,7 @@ class Game
     players.each { |p| p.game = self }
     @players = players
     
+    @stack = Stack.new(self)
     @active_player   = players.sample # the one that starts
     @priority_player = @active_player
     
@@ -241,6 +242,14 @@ class Game
     return true if players.size == 1 && playing.size > 0
     
     playing.size > 1
+  end
+  
+  def priority_round
+    return true if players.size == 1
+    while pass_priority != current_player
+      pass_priority
+      break if priority_player == current_player
+    end
   end
   
   def pass_priority

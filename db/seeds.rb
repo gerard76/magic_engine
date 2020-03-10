@@ -32,8 +32,16 @@ Card.where(types: '{land}', supertypes: '{basic}').order(:id).each do |card|
   puts "#{card.id} - #{card.subtypes}"
   color = card.colors.first || 'C'
   card.abilities << Ability.new(
-      cost: { tap: :self },
-      effects: { mana: { color: card, amount: 1 }},
+      cost: { name: :tap, args: { target: :self },
+      effect: { name: :mana, args: { color: color, amount: 1 }},
       activation: :activated
     )
 end;true
+
+Card.where(name: 'Shock').each do |card|
+  card.abilities << Ability.new(
+    cost: { name: :mana, args: { color: :R, amount: 1 }},
+    effect: { name: :damage, args: { amount: 2, target: { amount: 1, type: :any }}},
+    activation: :activated
+  )
+end

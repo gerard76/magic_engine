@@ -1,5 +1,6 @@
 class ManaPool
   # Colorless, Black, Green, Blue, Red, White
+  # TODO snow!
   COLORS = {
     colorless: 'C',
     plains:    'W',

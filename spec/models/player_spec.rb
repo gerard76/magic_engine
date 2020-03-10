@@ -74,9 +74,16 @@ describe Player do
         to change{player.hand.size}.from(7).to(6)
     end
     
-    it 'moves the card to battlefield' do
-      expect{player.play_card(player.hand.first)}.
+    it 'moves the card to battlefield if its a land' do
+      player.hand << build(:land)
+      expect{player.play_card(player.hand.last)}.
         to change{game.battlefield.size}.from(0).to(1)
+    end
+    
+    it 'moves the card to the stack if it is not a land' do
+      player.hand << build(:creature)
+      expect{ player.play_card(player.hand.last) }.
+        to change{ game.stack.size }.from(0).to(1)
     end
   end
   
