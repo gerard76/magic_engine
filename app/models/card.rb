@@ -67,8 +67,7 @@ class Card < ApplicationRecord
   def move(to_zone)
     # 506.4. A permanent is removed from combat if it leaves the battlefield
     remove_from_combat if zone.name == :battlefield
-    
-    zone.delete_at(zone.index(self) || zone.length)
+    zone.delete(self)
     to_zone.add self
     zone = to_zone
   end

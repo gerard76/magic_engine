@@ -21,7 +21,7 @@ class Zone
   end
   
   def delete(card)
-    cards.delete(card)
+    delete_at(index(card) || length)
   end
   
   def empty
