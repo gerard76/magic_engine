@@ -191,10 +191,10 @@ class Card < ApplicationRecord
   end
   
   def assign_damage(victim)
-    if victim.is_planeswalker?
-      victim.loyalty -= current_power
-    elsif victim.is_a?(Player)
+    if victim.is_a?(Player)
       victim.assign_damage(current_power)
+    elsif victim.is_planeswalker?
+      victim.loyalty -= current_power
     else
       damage_type = deathtouch? ? :deathtouch_damage : :damage
       amount = [current_power, victim.current_toughness].min
