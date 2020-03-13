@@ -247,9 +247,9 @@ class Card < ApplicationRecord
   end
   
   def triggered_abilities
-    abilities.select { |a| a.activation == 'triggered'}
+    abilities.filter(&:triggered)
   end
-
+  
   private
   
   def remove_from_combat

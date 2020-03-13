@@ -272,7 +272,6 @@ class Game
   
   def trigger(event, *args)
     triggers.dup.each do |ability|
-      # byebug
       # look for registered triggered abilities that should trigger now
       if ability.trigger['event'] == event.to_s
         

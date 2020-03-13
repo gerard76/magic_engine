@@ -5,9 +5,11 @@ class Ability < ApplicationRecord
   # expire <- when it should expire
   # effect <- what it should do
   # 
-  scope :static,    -> { where(activation: :static)    }
-  scope :activated, -> { where(activation: :activated) }
-  scope :triggered, -> { where(activation: :triggered) }
+  %w(activated static triggered).each do |a|
+    define_method(a) do
+      activation == a
+    end
+  end
   
   # 603.3c If a triggered ability is modal, its controller announces the mode choice when putting the ability on the stack. If one of the modes would be illegal (due to an inability to choose legal targets, for example), that mode can’t be chosen. If no mode is chosen, the ability is removed from the stack. (See rule 700.2.)
   attr_accessor :modal
