@@ -85,5 +85,4 @@ FactoryBot.define do
       activation { :activated }
     end
   end
-  
 end

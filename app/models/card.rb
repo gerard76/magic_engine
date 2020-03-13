@@ -46,7 +46,6 @@ class Card < ApplicationRecord
   attr_accessor :owner, :zone
   attr_accessor :damage, :deathtouch_damage
   
-  has_many :triggers
   has_many :abilities
   
   def tap_it
