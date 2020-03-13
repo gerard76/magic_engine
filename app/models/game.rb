@@ -7,7 +7,7 @@ class Game
                 
   attr_accessor :players, :active_player, :priority_player, :turn
   
-  attr_accessor :active_triggers
+  attr_accessor :triggers
   
   workflow do
     # Untap, Upkeep, Draw, Main1, Declare Attackers, Declare Blockers, Main2, End of Turn, and Cleanup
@@ -76,14 +76,15 @@ class Game
     @turn    = 0
     
     @stack = Stack.new(self)
+    
+    @triggers  = []
+    @battlefield = Zone.new(:battlefield, self)
+    
     ## PLAYERS:
     @players = players
     players.each { |p| p.start_game(self) }
     @active_player   = players.sample # the one that starts
     @priority_player = @active_player
-    
-    @active_triggers = []
-    @battlefield = Zone.new(:battlefield)
   end
   
   def run
@@ -244,32 +245,53 @@ class Game
   end
   
   def priority_round
-    return true if players.size == 1
-    while pass_priority != current_player
-      pass_priority
-      break if priority_player == current_player
+    current_player = priority_player
+    while pass_priority != current_player; end
+    
+    # 405.5. When all players pass in succession, the top (last-added) spell or ability on the stack resolves. If the stack is empty when all players pass, the current step or phase ends and the next begins.
+    if stack.size > 0
+      stack.resolve
+    else
+      next_phase!
     end
   end
   
   def pass_priority
     # 704.3. Whenever a player would get priority, the game checks for any of the listed conditions for state-based actions
     check_state_based_actions
-    priority_player = players[(players.index(priority_player) + 1) % players.size]
+    # byebug
+    self.priority_player = players[(players.index(priority_player) + 1) % players.size]
+    
+    # 603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority.
+    priority_player.add_triggers_to_stack if priority_player.triggers.present?
+    
+    # 603.3b If multiple abilities have triggered since the last time a player received priority, each player, in APNAP order, puts triggered abilities they control on the stack in any order they choose. (See rule 101.4.) Then the game once again checks for and resolves state-based actions until none are performed, then abilities that triggered during this process go on the stack. This process repeats until no new state-based actions are performed and no abilities trigger. Then the appropriate player gets priority.
+    priority_round if players.any? { |p| p.triggers.present? }
+    priority_player
   end
   
-  def trigger(name, args)
-    active_triggers.filter(name).each do |trigger|
-      trigger.ability.owner = trigger.source.owner
-      stack << trigger.ability # should actually be put on stack the next time a player receives priority
+  def trigger(event, *args)
+    triggers.dup.each do |ability|
+      # byebug
+      # look for registered triggered abilities that should trigger now
+      if ability.trigger['event'] == event.to_s
+        
+        # 603.3a A triggered ability is controlled by the player who controlled its source at the time it triggered
+        ability.controller = ability.card.controller
+        ability.controller.triggers << ability
+        triggers.delete(ability)
+      end
       
-      # 603.3b If multiple abilities have triggered since the last time a player received priority, each player, in APNAP order, puts triggered abilities they control on the stack in any order they choose. (See rule 101.4.) Then the game once again checks for and resolves state-based actions until none are performed, then abilities that triggered during this process go on the stack. This process repeats until no new state-based actions are performed and no abilities trigger. Then the appropriate player gets priority.
+      # look for triggers that should expire now
+      if ability.expire == event.to_s
+        triggers.delete(ability)
+      end
     end
+    
   end
   
-  def remove_triggers(triggers)
-    triggers = [triggers] unless triggers.is_a? Array
-    triggers.each do |trigger|
-      active_triggers.delete trigger
-    end
+  def register(triggered_ability)
+    triggered_ability = [triggered_ability] unless triggered_ability.is_a?(Array)
+    self.triggers += triggered_ability
   end
 end

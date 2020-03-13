@@ -6,6 +6,7 @@ describe Player do
   
   before do
     allow(player).to receive(:game).and_return game
+    allow(game).to receive(:priority_round).and_return true # prevent auto resolve
   end
   
   describe 'initialize' do
@@ -64,26 +65,30 @@ describe Player do
   end
   
   describe '#play_card' do
+    let(:card) { build :card }
+    
     it 'returns false if the card can not be played' do
-      card = build :card
       expect(player.play_card(card)).to be_falsey
     end
     
-    it 'moves the card from hand' do
-      expect{player.play_card(player.hand.first)}.
-        to change{player.hand.size}.from(7).to(6)
-    end
+    context "card in hand" do
+      before { player.hand << card }
+      
+      it 'moves the card from hand' do
+        expect{player.play_card(player.hand.first)}.
+          to change{player.hand.size}.from(8).to(7)
+      end
     
-    it 'moves the card to battlefield if its a land' do
-      player.hand << build(:land)
-      expect{player.play_card(player.hand.last)}.
-        to change{game.battlefield.size}.from(0).to(1)
-    end
+      it 'moves the card to battlefield if its a land' do
+        player.hand << build(:land)
+        expect{player.play_card(player.hand.last)}.
+          to change{game.battlefield.size}.from(0).to(1)
+      end
     
-    it 'moves the card to the stack if it is not a land' do
-      player.hand << build(:creature)
-      expect{ player.play_card(player.hand.last) }.
-        to change{ game.stack.size }.from(0).to(1)
+      it 'moves the card to the stack if it is not a land' do
+        expect{ player.play_card(player.hand.last) }.
+          to change{ game.stack.size }.from(0).to(1)
+      end
     end
   end
   

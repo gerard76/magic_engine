@@ -13,9 +13,12 @@ class Zone
     add card
   end
   
-  def add(card) 
+  def add(card)
     cards << card
     card.zone = self
+    
+    @game.register(card.triggered_abilities) if name == :hand
+    @game.trigger("enter_#{name}")
   end
   
   def delete(card)

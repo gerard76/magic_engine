@@ -70,7 +70,10 @@ class Card < ApplicationRecord
   def move(to_zone)
     # 506.4. A permanent is removed from combat if it leaves the battlefield
     remove_from_combat if zone.name == :battlefield
+    
     zone.delete(self)
+    
+    sick = true if is_creature? && to_zone.name == :battlefield
     to_zone.add self
     zone = to_zone
   end
@@ -243,6 +246,10 @@ class Card < ApplicationRecord
     first_strike? || double_strike?
   end
   
+  def triggered_abilities
+    abilities.select { |a| a.activation == 'triggered'}
+  end
+
   private
   
   def remove_from_combat
@@ -256,7 +263,7 @@ class Card < ApplicationRecord
       self.send("#{state}=", false)
     end
     
-    self.damage =0
+    self.damage = 0
     self.deathtouch_damage = 0
   end
   

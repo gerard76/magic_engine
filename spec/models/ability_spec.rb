@@ -18,21 +18,4 @@ describe Ability do
     end
   end
   
-  describe 'some random card implementations' do
-    describe 'Shock' do
-      it 'hurts' do
-        card = build :instant, name: 'Shock'
-        card.abilities << build(:ability,
-            cost: { name: :mana, args: { color: :R, amount: 1 }},
-            effect: { name: :damage, args: { amount: 2, target: { amount: 1, type: :any }}},
-            activation: :activated
-          )
-        player.hand << card
-        
-        player.play_card(player.hand.last, player)
-        expect{game.stack.resolve}.to change{player.life}.by(-2)
-      end
-    end
-  end
-  
 end

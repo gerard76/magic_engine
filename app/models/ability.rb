@@ -1,12 +1,17 @@
 class Ability < ApplicationRecord
   belongs_to :card
   
+  # event <- when it should trigger
+  # expire <- when it should expire
+  # effect <- what it should do
+  # 
   scope :static,    -> { where(activation: :static)    }
   scope :activated, -> { where(activation: :activated) }
   scope :triggered, -> { where(activation: :triggered) }
   
   # 603.3c If a triggered ability is modal, its controller announces the mode choice when putting the ability on the stack. If one of the modes would be illegal (due to an inability to choose legal targets, for example), that mode can’t be chosen. If no mode is chosen, the ability is removed from the stack. (See rule 700.2.)
   attr_accessor :modal
+  attr_accessor :controller
   
   # cost for activated ability
   serialize :costs, JSON
@@ -41,6 +46,10 @@ class Ability < ApplicationRecord
     case name
     when 'damage'
       damage
+    when 'gain_life'
+      gain_life 
+    when 'state'
+      state(args)
     end
   end
   
@@ -72,6 +81,16 @@ class Ability < ApplicationRecord
     get_targets.each do |target|
       card.power = args['amount']
       card.assign_damage(target)
+    end
+  end
+  
+  def gain_life(amount = 1)
+    controller.assign_life amount
+  end
+  
+  def state(args)
+    args.each do |state|
+      card.send("#{state}=", true)
     end
   end
   

@@ -5,6 +5,7 @@ describe Game do
   let(:p1)   { build :player, deck: deck }
   let(:p2)   { build :player }
   let(:game) { build :game, players: [p1,p2] }
+  let(:card) { build :card }
   
   describe '#playing?' do
     it 'returns true if more than one player is not dead' do
@@ -89,6 +90,31 @@ describe Game do
       
       expect(p2.dead?).to be_truthy
       expect(game.playing?).to be_falsey
+    end
+  end
+  
+  describe 'triggers' do
+    let(:trigger) { build(:triggered_ability,  trigger: { event: :beginning_of_upkeep }) }
+    
+    before do
+      card = deck.cards.first
+      card.controller = p1
+      trigger.card    = card
+    end
+    
+    describe '#register_trigger' do
+      it 'registers the trigger' do
+        expect{ game.register(trigger) }.to change{
+           game.triggers.size }.by(1)
+      end
+    end
+    
+    describe '#trigger' do
+      it 'tells the triggers current controller they need to stack this trigger' do
+        game.register(trigger)
+        expect{ game.trigger(:beginning_of_upkeep) }.to change{
+          p1.triggers.size }.by(1)
+      end
     end
   end
 end
