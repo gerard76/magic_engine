@@ -1,11 +1,10 @@
 require 'rails_helper'
 
 describe Game do
-  let(:deck) { build :deck        }
-  let(:p1)   { Player.new(deck)   }
-  let(:p2)   { Player.new(deck)   }
-  let(:game) { Game.new([p1, p2]) }
-  
+  let(:deck) { build :deck }
+  let(:p1)   { build :player, deck: deck }
+  let(:p2)   { build :player }
+  let(:game) { build :game, players: [p1,p2] }
   
   describe '#playing?' do
     it 'returns true if more than one player is not dead' do

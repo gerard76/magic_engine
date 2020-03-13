@@ -15,11 +15,7 @@ class Player
   
   def initialize(deck)
     @deck           = deck
-    @graveyard      = PlayerZone.new(self, :graveyard)
-    @exiled         = PlayerZone.new(self, :exiled)
-    @hand           = PlayerZone.new(self, :hand)
-    @library        = PlayerZone.new(self, :library)
-    
+   
     @mulligan_count = 0
     
     @poison_counter = 0
@@ -34,6 +30,13 @@ class Player
     
     @lose = false
     
+  def start_game(game)
+    @game = game
+    @graveyard = PlayerZone.new(self, :graveyard)
+    @exiled    = PlayerZone.new(self, :exiled)
+    @hand      = PlayerZone.new(self, :hand)
+    @library   = PlayerZone.new(self, :library)
+ 
     deck.cards.shuffle.each { |card| library.add(card) }
     
     draw(@starting_hand_size)

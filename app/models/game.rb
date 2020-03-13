@@ -73,13 +73,12 @@ class Game
   end
   
   def initialize(players)
-    players = [players] unless players.is_a?(Array)
-    
     @turn    = 0
-    players.each { |p| p.game = self }
-    @players = players
     
     @stack = Stack.new(self)
+    ## PLAYERS:
+    @players = players
+    players.each { |p| p.start_game(self) }
     @active_player   = players.sample # the one that starts
     @priority_player = @active_player
     

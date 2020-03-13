@@ -1,15 +1,19 @@
 class PlayerZone < Zone
-  attr_accessor :owner
   
   def initialize(player, name)
-    @owner = player
+    @player = player
     
-    super(name)
+    super(name, game)
   end
   
   def add(card)
-    card.controller = owner
+    card.controller = @player
     
     super card
   end
+  
+  def game
+    @player.game
+  end
+  
 end

@@ -3,9 +3,10 @@ class Zone
   
   delegate *(Array.new.methods - Object.methods), to: :@cards
   
-  def initialize(name)
+  def initialize(name, game)
     @name  = name
     @cards = []
+    @game = game
   end
   
   def <<(card)
