@@ -48,7 +48,7 @@ FactoryBot.define do
   
   factory :deck do
     after(:build) do |deck, evaluator|
-      40.times do
+      8.times do
         deck.cards.build(attributes_for(:card))
       end
     end
