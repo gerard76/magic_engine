@@ -51,8 +51,8 @@ class Card < ApplicationRecord
   def tap_it
     return false if tapped || (sick && !haste)
     
-    abilities.triggered.where("cost ->> 'tap' = 'self'" ).each(&:execute) # triggered abilities
     self.tapped = true
+    game.trigger(:tap)
   end
   
   def untap
@@ -267,6 +267,9 @@ class Card < ApplicationRecord
     self.deathtouch_damage = 0
   end
   
+  def game
+    (controller || zone).game
+  end
 end
 
 # A:SP$ ChangeZone | Cost$ 1 B | Origin$ Graveyard | Destination$ Hand | TargetMin$ 0 | TargetMax$ 2 | TgtPrompt$ Choose target creature card in your graveyard | ValidTgts$ Creature.YouOwn | SpellDescription$ Return up to two target creature cards from your graveyard to your hand, then discard a card. | SubAbility$ DBDiscard

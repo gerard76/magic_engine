@@ -17,6 +17,7 @@ class ManaPool
   end
   
   def add(color, amount = 1)
+    amount ||= 1
     color = color.to_s
     @pool[color] += amount if valid_color?(color)
     

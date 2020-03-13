@@ -1,8 +1,14 @@
 require 'rails_helper'
 
 describe Card do
-  let(:card) { build :card }
-
+  let(:card)   { build :card }
+  let(:player) { build :player }
+  
+  before do
+    card.controller = player
+    build :game, players: [player]
+  end
+  
   it 'has sane defaults' do
     expect(card.tapped).to be_falsey
     expect(card.sick).to be_falsey
@@ -120,8 +126,6 @@ describe Card do
   end
   
   describe '#attack' do
-    let(:player) { build :player }
-    
     before do
       card.types = ['creature']
     end

@@ -1,5 +1,5 @@
 class Zone
-  attr_accessor :name, :cards
+  attr_accessor :name, :cards, :game
   
   delegate *(Array.new.methods - Object.methods), to: :@cards
   

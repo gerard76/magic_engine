@@ -21,8 +21,9 @@ class Ability < ApplicationRecord
   serialize :duration, JSON
   
   # activated abilities
+  
   def activate
-    return false unless activation == :activated
+    return false unless activation == 'activated'
     pay && play
   end
   
@@ -31,7 +32,7 @@ class Ability < ApplicationRecord
     when 'tap'
       card.tap_it
     when 'mana'
-      card.controller.pay_mana(args[:color], args[:amount])
+      card.controller.pay_mana(args['color'], args['amount'])
     end
   end
   
