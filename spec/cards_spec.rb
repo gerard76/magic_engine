@@ -60,7 +60,9 @@ describe 'Cards' do
     end
     
     it 'taps to produce mana' do
+      expect{ card.abilities.first.activate }.to change {
+        player.mana_pool['R']
+      }.by +1
     end
   end
-  
 end
