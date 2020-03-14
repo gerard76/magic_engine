@@ -105,7 +105,10 @@ class ManaPool
   private
   
   def convert_mana_string(mana_string)
-    # mana string is something like: {3}{B}{G}{U} or {X}{B}{G}{U}
+    # mana string examples:
+    # {3}{B}{G}{U}
+    # {X}{B}{G}{U}
+    # {B/G}{R}
     array = mana_string[1..-2].split('}{')
     array.map { |a| a.numeric? ? a : a }.tally
   end

@@ -83,6 +83,7 @@ class Card < ApplicationRecord
   end
   
   def to_s
+    # TODO: check out https://github.com/livingsocial/tablesmith
     cost = " - #{mana_cost}"
     puts "#{id}: #{name} - #{card_type} #{cost}"
   end
