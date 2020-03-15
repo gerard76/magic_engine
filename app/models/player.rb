@@ -15,7 +15,7 @@ class Player
   attr_accessor :cant_be_attacked
   
   def initialize(deck)
-    @deck           = deck
+    @deck = deck
    
     @mulligan_count = 0
     
@@ -39,7 +39,11 @@ class Player
     @hand      = PlayerZone.new(self, :hand)
     @library   = PlayerZone.new(self, :library)
  
-    deck.cards.shuffle.each { |card| library.add(card) }
+    deck.cards.shuffle.each do |card|
+      # 108.3. The owner of a card in the game is the player who started the game with it in their deck.
+      card.owner = self
+      library.add(card)
+    end
     
     draw(@starting_hand_size)
   end
@@ -73,7 +77,7 @@ class Player
   def can_play?(card)
     card.playable_zones.include?(card.zone&.name) &&
       mana_pool.can_pay?(card.mana_cost) &&
-      card.controller == self &&
+      card.owner == self &&
       (!card.is_land? || !!!@cards_played_this_turn.detect(&:is_land?))
   end
   
@@ -112,6 +116,8 @@ class Player
     return false unless can_play?(card)
     
     mana_pool.pay_mana(card.mana_cost)
+    
+    card.controller = self
     
     if card.is_land?
       card.move game.battlefield

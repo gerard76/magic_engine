@@ -42,7 +42,6 @@ class Card < ApplicationRecord
     define_method("#{state}?") { !!self.send(state) }
   end
 
-  attr_reader  :controller
   attr_accessor :owner, :zone
   attr_accessor :damage, :deathtouch_damage
   
@@ -59,6 +58,11 @@ class Card < ApplicationRecord
     return false unless tapped
     self.tapped = false
     true # lets return succes
+  end
+  
+  def controller
+    # 108.4a If anything asks for the controller of a card that doesn’t have one (because it’s not a permanent or spell), use its owner instead.
+    @controller || @owner
   end
   
   def controller=(player)

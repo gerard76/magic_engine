@@ -33,13 +33,12 @@ describe Player do
     let(:mana_pool) { build :mana_pool }
 
     let(:zone)      { build :zone      }
-    let(:card)      { build :card, zone: zone }
+    let(:card)      { build :card, zone: zone, owner: player }
     
     before do
       allow(player).to receive(:mana_pool).and_return(mana_pool)
       allow(mana_pool).to receive(:can_pay?).and_return true
       allow(card).to receive(:playable_zones).and_return([card.zone.name])
-      allow(card).to receive(:controller).and_return(player)
     end
     
     it 'returns true when all the planets align' do
@@ -58,14 +57,14 @@ describe Player do
     end
     
     it 'returns false if the player is not the controller of the card' do
-      expect(card).to receive(:controller).and_return(build(:player))
+      expect(card).to receive(:owner).and_return(build(:player))
       
       expect(player.can_play?(card)).to be_falsey
     end
   end
   
   describe '#play_card' do
-    let(:card) { build :card }
+    let(:card) { build :card, owner: player }
     
     it 'returns false if the card can not be played' do
       expect(player.play_card(card)).to be_falsey
@@ -80,7 +79,7 @@ describe Player do
       end
     
       it 'moves the card to battlefield if its a land' do
-        player.hand << build(:land)
+        player.hand << build(:land, owner: player)
         expect{player.play_card(player.hand.last)}.
           to change{game.battlefield.size}.from(0).to(1)
       end

@@ -11,7 +11,7 @@ describe 'Cards' do
   end
   
   describe 'Shock' do
-    let(:card) { build :instant, name: 'Shock' }
+    let(:card) { build :instant, name: 'Shock', owner: player }
     
     before do
       card.abilities << build(:activated_ability,
@@ -33,7 +33,7 @@ describe 'Cards' do
     # When Akoum Refuge enters the battlefield, you gain 1 life.
     # {T}: Add {B} or {R}.
     
-    let(:card) { build(:land, name: 'Akoum Refuge')}
+    let(:card) { build(:land, name: 'Akoum Refuge', owner: player)}
     let(:tap1)  { build(:activated_ability,
                         cost: :tap,
                         effect: { mana: :R })}

@@ -7,8 +7,6 @@ class PlayerZone < Zone
   end
   
   def add(card)
-    card.controller = @player
-    
     super card
   end
   
