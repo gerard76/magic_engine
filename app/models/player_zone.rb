@@ -7,6 +7,7 @@ class PlayerZone < Zone
   end
   
   def add(card)
+    card.contrller = nil if name == :exiled
     super card
   end
   

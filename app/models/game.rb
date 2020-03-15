@@ -293,4 +293,8 @@ class Game
     triggered_ability = [triggered_ability] unless triggered_ability.is_a?(Array)
     self.triggers += triggered_ability
   end
+
+  def cards
+    players.map(&:cards).flatten
+  end
 end

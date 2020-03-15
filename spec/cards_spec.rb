@@ -67,4 +67,53 @@ describe 'Cards' do
       }.by +1
     end
   end
+  
+  describe 'Jund Hackblade' do
+    # As long as you control another multicolored permanent, Jund Hackblade gets +1/+1 and has haste.
+    
+    let(:card)   { build(:creature, name: 'Jund Hackblade', power: 2, 
+                     toughness: 1, owner: player, mana_cost: '{B/G}{R}')}
+    let(:static) { build(:static_ability,
+                          effect: [ :haste, 
+                                   { power: "+1" },
+                                   { toughness: "+1" }],
+                          trigger: { compare: [{count: [:control, :permanent, :multicolor]}, ">1"]} )}
+                          
+    before do
+      card.abilities << static
+      game.battlefield << card
+    end
+    
+    context "you do not control another multicolored permanent" do
+      before do
+        another = build :creature, controller: card.controller, mana_cost: '{R}'
+        game.battlefield << another
+      end
+      
+      it "is not buffed by default" do
+        expect(card.current_power).to eql(2)
+        expect(card.current_toughness).to eql(1)
+      end
+      
+      it "does not have haste" do
+        expect(card.haste?).to be_falsey
+      end
+    end
+    
+    context "you control another multicolored permanent" do
+      before do
+        another = build :creature, controller: card.controller, mana_cost: '{B/G}{R}'
+        game.battlefield << another
+      end
+      
+      it "is buffed" do
+        expect(card.current_power).to eql(3)
+        expect(card.current_toughness).to eql(2)
+      end
+      
+      it "has haste" do
+        expect(card.haste?).to be_truthy
+      end
+    end
+  end
 end

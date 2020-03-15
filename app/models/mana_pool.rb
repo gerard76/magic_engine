@@ -65,7 +65,7 @@ class ManaPool
     color_mana   = to_pay_color(mana_array)
     
     color_mana.each do |color, amount|
-      return false if @pool[color] < amount
+      return false if color.split('/').all? { |c| @pool[c] < amount } # split for multicolor
     end
     return false if (generic_mana + color_mana.values.sum) > total_mana
     

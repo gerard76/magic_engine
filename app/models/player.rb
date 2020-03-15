@@ -2,11 +2,12 @@ class Player
   
   DEFAULT_HAND_SIZE = 7
   STARTING_LIFE = 20
+  ZONES = %i(graveyard exiled hand library)
   
   attr_accessor :name, :game
   attr_accessor :triggers
   #zones
-  attr_accessor :deck, :hand, :library, :graveyard, :exiled, :battlefield
+  attr_accessor :deck, *ZONES
   
   attr_accessor :life, :overdraw
   attr_accessor :mulligan_count
@@ -34,11 +35,10 @@ class Player
   
   def start_game(game)
     @game = game
-    @graveyard = PlayerZone.new(self, :graveyard)
-    @exiled    = PlayerZone.new(self, :exiled)
-    @hand      = PlayerZone.new(self, :hand)
-    @library   = PlayerZone.new(self, :library)
- 
+    ZONES.each do |zone_name|
+      self.send("#{zone_name}=", PlayerZone.new(self, zone_name))
+    end
+    
     deck.cards.shuffle.each do |card|
       # 108.3. The owner of a card in the game is the player who started the game with it in their deck.
       card.owner = self
@@ -151,7 +151,7 @@ class Player
   end
   
   def battlefield
-    game.battlefield.filter { |c| c.controller == self }
+    game.battlefield
   end
   
   def dead?
@@ -177,5 +177,12 @@ class Player
       game.stack << trigger
     end
   end
-  
+
+  def cards
+    all_cards = battlefield.cards
+    ZONES.each do |zone_name|
+      all_cards += self.send(zone_name).cards
+    end
+    all_cards
+  end
 end

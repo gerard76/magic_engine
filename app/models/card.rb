@@ -39,7 +39,9 @@ class Card < ApplicationRecord
   after_initialize :set_default_values
   
   STATES.each do |state|
-    define_method("#{state}?") { !!self.send(state) }
+    define_method("#{state}?") do
+      active_effects_with(state).present? || !!self.send(state)
+    end
   end
 
   attr_accessor :owner, :zone
@@ -112,7 +114,7 @@ class Card < ApplicationRecord
     return 4
   end
   
-  #### TYPES:
+  #### TRAITS:
   
   def method_missing(method, *args, &block)
     type = method[/^is_([a-z]+)\?/, 1]
@@ -124,6 +126,16 @@ class Card < ApplicationRecord
     end
     
     super
+  end
+  
+  def permanent?
+    zone.name == :battlefield &&
+      !is_instant? &&
+      !is_spell?
+  end
+  
+  def multicolor?
+    mana_cost =~/\//
   end
   
   def remove_type(type)
@@ -232,19 +244,29 @@ class Card < ApplicationRecord
   end
   
   def current_power
-    # TODO
-    # this is the place to look at counters and static abilities
-    # minding layers and timestamps
-    # for now:
-    power.to_i
+    # TODO: layering
+    current_power = power.to_i
+    
+    active_effects_with(:power).each do |effect|
+      symbol, value = effect.first.second.match(/([^0-9]*)([0-9]+)/)[1..2]
+      symbol = "=" if symbol.empty?
+      current_power = current_power.send(symbol, value.to_i)
+    end
+    
+    current_power
   end
   
   def current_toughness
-    # TODO
-    # this is the place to look at counters and and static abilities
-    # minding layers and timestamps
-    # for now:
-    toughness.to_i
+    # TODO: layering
+    current_toughness = toughness.to_i
+    
+    active_effects_with(:toughness).each do |effect|
+      symbol, value = effect.first.second.match(/([^0-9]*)([0-9]+)/)[1..2]
+      symbol = "=" if symbol.empty?
+      current_toughness = current_toughness.send(symbol, value.to_i)
+    end
+    
+    current_toughness
   end
   
   def strikes_first?
@@ -253,6 +275,23 @@ class Card < ApplicationRecord
   
   def triggered_abilities
     abilities.filter(&:triggered)
+  end
+  
+  def active_effects_with(attribute)
+    effects   = []
+    attribute = attribute.to_s
+    active_static_abilities.each do |ability|
+      ability.effect.each do |effect|
+        if (effect == attribute) || effect.is_a?(Hash) && effect.keys.include?(attribute)
+          effects << effect
+        end
+      end
+    end
+    effects
+  end
+  
+  def active_static_abilities
+    abilities.filter(&:static).filter(&:active?)
   end
   
   private
