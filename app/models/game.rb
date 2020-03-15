@@ -273,7 +273,7 @@ class Game
   def trigger(event, *args)
     triggers.dup.each do |ability|
       # look for registered triggered abilities that should trigger now
-      if ability.trigger['event'] == event.to_s
+      if ability.trigger == event.to_s
         
         # 603.3a A triggered ability is controlled by the player who controlled its source at the time it triggered
         ability.controller = ability.card.controller

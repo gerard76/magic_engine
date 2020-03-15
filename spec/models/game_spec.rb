@@ -94,7 +94,7 @@ describe Game do
   end
   
   describe 'triggers' do
-    let(:trigger) { build(:triggered_ability,  trigger: { event: :beginning_of_upkeep }) }
+    let(:trigger) { build(:triggered_ability, trigger: :beginning_of_upkeep ) }
     
     before do
       card = deck.cards.first

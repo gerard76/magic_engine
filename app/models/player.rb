@@ -168,7 +168,6 @@ class Player
       
       # 603.3c If a triggered ability is modal, its controller announces the mode choice when putting the ability on the stack.
       # TODO: let player determine mode
-      
       game.stack << trigger
     end
   end

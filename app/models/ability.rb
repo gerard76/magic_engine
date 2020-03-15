@@ -1,6 +1,9 @@
 class Ability < ApplicationRecord
   belongs_to :card
   
+  # Abilities always fall into one of four categories: spell abilities, activated abilities, triggered abilities, and static abilities.
+  # A triggered ability is an ability that automatically does something when a certain event occurs or a set of conditions is met (the latter is called a state-triggered ability).
+  
   # event <- when it should trigger
   # expire <- when it should expire
   # effect <- what it should do
@@ -28,7 +31,7 @@ class Ability < ApplicationRecord
   end
   
   def pay
-    case cost['name']
+    case cost
     when 'tap'
       card.tap_it
     when 'mana'
@@ -39,7 +42,7 @@ class Ability < ApplicationRecord
   def play
     case name
     when 'mana' # mana abilities do not use the stack
-      card.controller.mana_pool.add(args['color'], args['amount'])
+      resolve
     else
       game.stack.add(effect, args)
     end
@@ -47,21 +50,20 @@ class Ability < ApplicationRecord
   
   def resolve
     case name
-    when 'damage'
-      damage
-    when 'gain_life'
-      gain_life 
-    when 'state'
-      state(args)
+    when 'tapped'
+      set_state('tapped')
+    else
+      self.send name
     end
   end
   
   def args
-    effect['args']
+    effect.first[1..-1]
   end
   
   def name
-    effect['name']
+    return effect.first.first if effect.is_a?(Hash)
+    effect
   end
   
   LAYER = {
@@ -80,9 +82,15 @@ class Ability < ApplicationRecord
   
   private
   
+  def mana
+    color = args.first
+    color, amount = color.first if color.first.is_a? Array
+    card.controller.mana_pool.add(color, amount)
+  end
+  
   def damage
     get_targets.each do |target|
-      card.power = args['amount']
+      card.power = args.first
       card.assign_damage(target)
     end
   end
@@ -91,10 +99,23 @@ class Ability < ApplicationRecord
     controller.assign_life amount
   end
   
-  def state(args)
-    args.each do |state|
+  def set_state(states)
+    states = [states] unless states.is_a? Array
+    states.each do |state|
       card.send("#{state}=", true)
     end
+  end
+  
+  def power
+    symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
+    symbol = "=" if symbol.empty?
+    card.send("power#{symbol}", value)
+  end
+  
+  def toughness
+    symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
+    symbol = "=" if symbol.empty?
+    card.send("toughness#{symbol}", value)
   end
   
   def get_targets

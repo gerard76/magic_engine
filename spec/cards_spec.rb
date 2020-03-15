@@ -11,16 +11,18 @@ describe 'Cards' do
   end
   
   describe 'Shock' do
-    # Shock deals 2 damage to any target.
-    it 'hurts' do
-      card = build :instant, name: 'Shock'
+    let(:card) { build :instant, name: 'Shock' }
+    
+    before do
       card.abilities << build(:activated_ability,
-          cost: { name: :mana, args: { color: :R, amount: 1 }},
-          effect: { name: :damage, args: { amount: 2, target: { amount: 1, type: :any }}}
+          cost: { mana: :R },
+          effect: { damage: 2 }
         )
       player.hand << card
-      
-      
+    end
+    
+    # Shock deals 2 damage to any target.
+    it 'hurts' do
       expect{ player.play_card(player.hand.last, player) }.to change{
         player.life }.by(-2)
     end
@@ -33,17 +35,17 @@ describe 'Cards' do
     
     let(:card) { build(:land, name: 'Akoum Refuge')}
     let(:tap1)  { build(:activated_ability,
-                        cost:   { name: :tap },
-                        effect: { name: :mana, args: { color: :R }})}
+                        cost: :tap,
+                        effect: { mana: :R })}
     let(:tap2)  { build(:activated_ability,
-                        cost:   { name: :tap },
-                        effect: { name: :mana, args: { color: :B }})}
+                        cost: :tap,
+                        effect: { mana: :B })}
     let(:gain_life) { build(:triggered_ability,
-                             effect:  { name: :gain_life },
-                             trigger: { event: :enter_battlefield })}
+                             effect: :gain_life,
+                             trigger: :enter_battlefield )}
     let(:enter_tapped) { build(:triggered_ability,
-                                effect:  { name: :state, args: [:tapped] },
-                                trigger: { event: :enter_battlefield })}
+                                effect: :tapped,
+                                trigger: :enter_battlefield )}
                                 
     before do
       card.abilities += [tap1, tap2, gain_life, enter_tapped]
