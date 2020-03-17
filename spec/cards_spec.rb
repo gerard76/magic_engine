@@ -15,7 +15,7 @@ describe 'Cards' do
     
     before do
       card.abilities << build(:activated_ability,
-          cost: { mana: :R },
+          cost: { mana: { r: 1 } },
           effect: { damage: 2 }
         )
       player.hand << card
@@ -63,7 +63,7 @@ describe 'Cards' do
     
     it 'taps to produce mana' do
       expect{ card.abilities.first.activate }.to change {
-        player.mana_pool['R']
+        player.mana_pool['r']
       }.by +1
     end
   end

@@ -2,12 +2,12 @@ class ManaPool
   # Colorless, Black, Green, Blue, Red, White
   # TODO snow!
   COLORS = {
-    colorless: 'C',
-    plains:    'W',
-    swamp:     'B',
-    forest:    'G',
-    island:    'U',
-    mountain:  'R'
+    colorless: 'c',
+    plains:    'w',
+    swamp:     'b',
+    forest:    'g',
+    island:    'u',
+    mountain:  'r'
   }
   
   delegate *(Hash.new.methods - Object.methods), to: :@pool
@@ -76,7 +76,7 @@ class ManaPool
     pay = {}
     mana_array.each do |color, amount|
       next if color.to_s.numeric?
-      next if color == 'X'
+      next if color == 'x'
       
       pay[color] = amount
     end
@@ -87,7 +87,7 @@ class ManaPool
     generic = 0
     mana_array.each do |color, amount|
       (generic += color.to_i) && next if color.to_s.numeric?
-      (generic += x && next) if color == 'X'
+      (generic += x && next) if color == 'x'
     end
     generic
   end
@@ -109,7 +109,7 @@ class ManaPool
     # {3}{B}{G}{U}
     # {X}{B}{G}{U}
     # {B/G}{R}
-    array = mana_string[1..-2].split('}{')
+    array = mana_string[1..-2].split('}{').map(&:downcase)
     array.map { |a| a.numeric? ? a : a }.tally
   end
   
