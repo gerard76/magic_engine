@@ -36,15 +36,15 @@ describe 'Cards' do
     let(:card) { build(:land, name: 'Akoum Refuge', owner: player)}
     let(:tap1)  { build(:activated_ability,
                         cost: :tap,
-                        effect: { mana: :R })}
+                        effect: { mana: {r: "+1"}})}
     let(:tap2)  { build(:activated_ability,
                         cost: :tap,
-                        effect: { mana: :B })}
+                        effect: { mana: { b: "+1" }})}
     let(:gain_life) { build(:triggered_ability,
-                             effect: :gain_life,
+                             effect: { life: "+1" },
                              trigger: :enter_battlefield )}
     let(:enter_tapped) { build(:triggered_ability,
-                                effect: :tapped,
+                                effect: { tapped: true },
                                 trigger: :enter_battlefield )}
                                 
     before do
@@ -72,12 +72,20 @@ describe 'Cards' do
     # As long as you control another multicolored permanent, Jund Hackblade gets +1/+1 and has haste.
     
     let(:card)   { build(:creature, name: 'Jund Hackblade', power: 2, 
-                     toughness: 1, owner: player, mana_cost: '{B/G}{R}')}
+                     toughness: 1, mana_cost: '{B/G}{R}', owner: player)}
+                     
     let(:static) { build(:static_ability,
-                          effect: [ :haste, 
-                                   { power: "+1" },
-                                   { toughness: "+1" }],
-                          trigger: { compare: [{count: [:control, :permanent, :multicolor]}, ">1"]} )}
+                          effect: { 
+                            haste: true,
+                            power: "+1" ,
+                            toughness: "+1"
+                          },
+                          condition: { 
+                            compare: { 
+                              this: { count: [:control, :permanent, :multicolor] }, 
+                              that: ">1"
+                            }
+                          })}
                           
     before do
       card.abilities << static

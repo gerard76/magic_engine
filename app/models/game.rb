@@ -259,7 +259,7 @@ class Game
   def pass_priority
     # 704.3. Whenever a player would get priority, the game checks for any of the listed conditions for state-based actions
     check_state_based_actions
-    # byebug
+    
     self.priority_player = players[(players.index(priority_player) + 1) % players.size]
     
     # 603.3. Once an ability has triggered, its controller puts it on the stack as an object that’s not a card the next time a player would receive priority.

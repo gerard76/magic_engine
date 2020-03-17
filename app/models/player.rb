@@ -146,10 +146,6 @@ class Player
     self.life -= power
   end
   
-  def assign_life(amount)
-    self.life += amount
-  end
-  
   def battlefield
     game.battlefield
   end

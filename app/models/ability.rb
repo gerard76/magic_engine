@@ -17,52 +17,51 @@ class Ability < ApplicationRecord
   attr_accessor :controller
   
   # cost for activated ability
-  serialize :costs, JSON
+  serialize :cost, JSON
   serialize :effect, JSON
   serialize :duration, JSON
+  serialize :condition, JSON
   
   # activated abilities
   
   def activate
+    
     return false unless activation == 'activated'
     pay && play
   end
   
   def pay
-    case cost
+    # 'cost' without 'self' gives weird results
+    if self.cost.is_a?(Hash)
+      cost, args = cost.first
+    end
+    
+    case self.cost
     when 'tap'
       card.tap_it
     when 'mana'
-      card.controller.pay_mana(args['color'], args['amount'])
+      color, amount = args.first
+      card.controller.pay_mana(color, amount)
     end
   end
   
   def play
-    case name('effect')
+    method, args = effect.first
+    case method
     when 'mana' # mana abilities do not use the stack
       resolve
     else
-      game.stack.add(effect, args('effect'))
+      game.stack.add(method, args)
     end
   end
   
   def resolve
-    case name('effect')
-    when 'tapped'
-      set_state('tapped')
+    method, args = effect.first
+    if Card::STATES.include?(method.to_sym)
+      card.send("#{method}=", args)
     else
-      self.send name('effect')
+      send(method, args)
     end
-  end
-  
-  def args(key)
-    send(key).first[1..-1]
-  end
-  
-  def name(key)
-    value = send(key)
-    return value.first.first if value.is_a?(Hash)
-    value
   end
   
   LAYER = {
@@ -81,11 +80,12 @@ class Ability < ApplicationRecord
   
   # used to check if a static ability is currently active
   def active?
-    return true if trigger.empty?
+    return true if condition.empty?
+    method, args = condition.first
     
-    case name('trigger')
+    case method
     when 'compare'
-      compare *trigger.values.first
+      compare args
     end
   end
   
@@ -96,56 +96,59 @@ class Ability < ApplicationRecord
   private
   
   ### EFFECTS:
-  def mana
-    color = args('effect').first
-    color, amount = color.first if color.first.is_a? Array
-    card.controller.mana_pool.add(color, amount)
+  def mana(args)
+    color, operation = args.first
+    symbol, value = operation.match(/([^0-9]*)([0-9]+)/)[1..2]
+    if symbol == "+"
+      card.controller.mana_pool.add(color, value.to_i)
+    end
   end
   
-  def damage
+  def damage(amount)
     get_targets.each do |target|
-      card.power = args('effect').first
+      card.power = amount
       card.assign_damage(target)
     end
   end
   
-  def gain_life(amount = 1)
-    controller.assign_life amount
-  end
-  
-  def set_state(states)
-    states = [states] unless states.is_a? Array
-    states.each do |state|
-      card.send("#{state}=", true)
-    end
-  end
-  
-  def power
+  def life(args)
     symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
     symbol = "=" if symbol.empty?
-    card.send("power#{symbol}", value)
+    controller.life = controller.life.send(symbol, value.to_i)
   end
   
-  def toughness
+  def power(args)
     symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
     symbol = "=" if symbol.empty?
-    card.send("toughness#{symbol}", value)
+    card.power.send(symbol, value.to_i)
+  end
+  
+  def toughness(args)
+    symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
+    symbol = "=" if symbol.empty?
+    card.toughness.send(symbol, value.to_i)
   end
   
   ### CONDITIONS:
   
-  def compare(this, that)
-    # returns true of false
+  def call_method(method)
+  end
+  
+  def compare(args)
+    # returns true or false
+    this = args['this']
+    that = args['that']
     
-    arg1 = case this.keys.first
+    method, args = this.first
+    
+    this = case method
     when 'count'
-      count this.values.first
+      count args
     end
-    
+  
     operation, value = that.match(/([^0-9]*)([0-9]+)/)[1..2]
     
-    arg1.send(operation, value.to_i)
-
+    this.send(operation, value.to_i)
   end
   
   def count(card_filter_array)

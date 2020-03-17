@@ -13,7 +13,7 @@ describe Ability do
   describe '#play' do
     it 'does not add mana abilities to the stack' do
       card.controller = player
-      ability.effect = { mana: {B: 2 }}
+      ability.effect = { mana: {b: "+2" }}
       expect { ability.play }.to change{ player.mana_pool['b'] }.by(2)
     end
   end

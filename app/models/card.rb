@@ -247,8 +247,8 @@ class Card < ApplicationRecord
     # TODO: layering
     current_power = power.to_i
     
-    active_effects_with(:power).each do |effect|
-      symbol, value = effect.first.second.match(/([^0-9]*)([0-9]+)/)[1..2]
+    active_effects_with(:power).each do |operation|
+      symbol, value = operation.match(/([^0-9]*)([0-9]+)/)[1..2]
       symbol = "=" if symbol.empty?
       current_power = current_power.send(symbol, value.to_i)
     end
@@ -260,8 +260,8 @@ class Card < ApplicationRecord
     # TODO: layering
     current_toughness = toughness.to_i
     
-    active_effects_with(:toughness).each do |effect|
-      symbol, value = effect.first.second.match(/([^0-9]*)([0-9]+)/)[1..2]
+    active_effects_with(:toughness).each do |operation|
+      symbol, value = operation.match(/([^0-9]*)([0-9]+)/)[1..2]
       symbol = "=" if symbol.empty?
       current_toughness = current_toughness.send(symbol, value.to_i)
     end
@@ -281,10 +281,8 @@ class Card < ApplicationRecord
     effects   = []
     attribute = attribute.to_s
     active_static_abilities.each do |ability|
-      ability.effect.each do |effect|
-        if (effect == attribute) || effect.is_a?(Hash) && effect.keys.include?(attribute)
-          effects << effect
-        end
+      ability.effect.each_pair do |effect, value|
+        effects << value if effect == attribute
       end
     end
     effects

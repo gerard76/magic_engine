@@ -28,7 +28,6 @@ class Stack
   end
   
   def resolve
-    # byebug
     while item = items.pop
       if item.is_a?(Card)
         resolve_card(item)
