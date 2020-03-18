@@ -194,6 +194,7 @@ class Card < ApplicationRecord
   
   def assign_attack_damage
     damage = current_power
+    
     if blocker # attacker is blocked
       
       # 510.1c A blocked creature assigns its combat damage to the creatures blocking it.
@@ -215,15 +216,19 @@ class Card < ApplicationRecord
   end
   
   def assign_damage(victim)
+    amount = current_power
     if victim.is_a?(Player)
-      victim.assign_damage(current_power)
+      victim.assign_damage(amount)
     elsif victim.is_planeswalker?
-      victim.loyalty -= current_power
+      victim.loyalty -= amount
     else
       damage_type = deathtouch? ? :deathtouch_damage : :damage
       amount = [current_power, victim.current_toughness].min
       victim.send("#{damage_type}=", amount)
     end
+    
+    game.trigger(:damage, source: self, target: victim) if amount > 0
+    amount
   end
   
   def lethal_damage?
