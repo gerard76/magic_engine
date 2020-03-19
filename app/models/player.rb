@@ -67,6 +67,11 @@ class Player
     library.unshift *hand.pop(mulligan_count)
   end
   
+  def discard(amount = 1)
+    # TODO: player chose card
+    graveyard << hand.pop
+  end
+  
   def untap
     battlefield.each do |card|
       card.untap

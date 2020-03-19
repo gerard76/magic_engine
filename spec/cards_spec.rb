@@ -8,20 +8,20 @@ describe 'Cards' do
   
   before do
     allow(player).to receive(:game).and_return(game)
+    allow(player).to receive(:can_play?).and_return true
   end
   
   describe 'Shock' do
+    # Shock deals 2 damage to any target.
     let(:card) { build :instant, name: 'Shock', owner: player }
     
     before do
       card.abilities << build(:activated_ability,
-          cost: { mana: { r: 1 } },
-          effect: { damage: 2 }
-        )
+                          cost:   { mana: { r: 1 } },
+                          effect: { damage: 2 } )
       player.hand << card
     end
     
-    # Shock deals 2 damage to any target.
     it 'hurts' do
       expect{ player.play_card(player.hand.last, player) }.to change{
         player.life }.by(-2)
@@ -32,23 +32,21 @@ describe 'Cards' do
     # Akoum Refuge enters the battlefield tapped.
     # When Akoum Refuge enters the battlefield, you gain 1 life.
     # {T}: Add {B} or {R}.
+    let(:card) { build(:land, name: 'Akoum Refuge', owner: player) }
     
-    let(:card) { build(:land, name: 'Akoum Refuge', owner: player)}
-    let(:tap1)  { build(:activated_ability,
-                        cost: :tap,
-                        effect: { mana: {r: "+1"}})}
-    let(:tap2)  { build(:activated_ability,
-                        cost: :tap,
-                        effect: { mana: { b: "+1" }})}
-    let(:gain_life) { build(:triggered_ability,
-                             effect: { life: "+1" },
-                             trigger: :enter_battlefield )}
-    let(:enter_tapped) { build(:triggered_ability,
-                                effect: { tapped: true },
-                                trigger: :enter_battlefield )}
-                                
     before do
-      card.abilities += [tap1, tap2, gain_life, enter_tapped]
+      card.abilities << build(:activated_ability,
+                          cost: :tap,
+                          effect: { mana: {r: "+1"}})
+      card.abilities << build(:activated_ability,
+                          cost: :tap,
+                          effect: { mana: { b: "+1" }})
+      card.abilities << build(:triggered_ability,
+                          effect: { life: "+1" },
+                          trigger: :enter_battlefield )
+      card.abilities << build(:triggered_ability,
+                          effect: { tapped: true },
+                          trigger: :enter_battlefield )
       player.hand << card
     end
     
@@ -70,11 +68,11 @@ describe 'Cards' do
   
   describe 'Jund Hackblade' do
     # As long as you control another multicolored permanent, Jund Hackblade gets +1/+1 and has haste.
-    
     let(:card)   { build(:creature, name: 'Jund Hackblade', power: 2, 
                      toughness: 1, mana_cost: '{B/G}{R}', owner: player)}
                      
-    let(:static) { build(:static_ability,
+    before do
+      card.abilities << build(:static_ability,
                           effect: { 
                             haste: true,
                             power: "+1" ,
@@ -83,12 +81,7 @@ describe 'Cards' do
                           condition: { 
                             compare: { 
                               this: { count: [:control, :permanent, :multicolor] }, 
-                              that: ">1"
-                            }
-                          })}
-                          
-    before do
-      card.abilities << static
+                              that: ">1" }})
       game.battlefield << card
     end
     
@@ -122,6 +115,33 @@ describe 'Cards' do
       it "has haste" do
         expect(card.haste?).to be_truthy
       end
+    end
+  end
+  
+  describe 'Abyssal Specter' do
+    # Flying
+    # Whenever Abyssal Specter deals damage to a player, that player discards a card.
+    let(:card)   { build(:creature, power: 2, owner: player) }
+    
+    before do
+      card.abilities << build(:static_ability, effect: { flying: true }, card: card )
+      card.abilities << build(:triggered_ability, card: card,
+                          effect:  { discard: { amount: 1, player: :target } },
+                          trigger: { damage:  { source: :self, target: :player }} )
+                          
+      player.hand << card
+      player.play_card(card)
+    end
+    
+    it 'flies' do
+      expect(card.flying?).to be_truthy
+    end
+    
+    it 'forces discard when damaging a player' do
+      # damage komt bij triggers van controller, maar die gaan niet op de stack
+      expect(player).to receive(:discard).with(1)
+      card.assign_damage(player)
+      game.pass_priority
     end
   end
 end

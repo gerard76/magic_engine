@@ -17,7 +17,9 @@ class Zone
     cards << card
     card.zone = self
     
-    @game.register(card.triggered_abilities) if name == :hand
+    if card.triggered_abilities.present? && name == :hand
+      @game.register(card.triggered_abilities)
+    end
     @game.trigger("enter_#{name}")
   end
   

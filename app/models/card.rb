@@ -205,7 +205,7 @@ class Card < ApplicationRecord
     end
     
     if !blocker || trample
-      attacking.assign_damage(damage) # damage player or planeswalker
+      assign_damage(attacking, damage) # damage player or planeswalker
     end
   end
    
@@ -215,8 +215,8 @@ class Card < ApplicationRecord
     end
   end
   
-  def assign_damage(victim)
-    amount = current_power
+  def assign_damage(victim, amount = nil)
+    amount ||= current_power
     if victim.is_a?(Player)
       victim.assign_damage(amount)
     elsif victim.is_planeswalker?

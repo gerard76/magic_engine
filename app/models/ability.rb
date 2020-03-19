@@ -25,7 +25,6 @@ class Ability < ApplicationRecord
   # activated abilities
   
   def activate
-    
     return false unless activation == 'activated'
     pay && play
   end
@@ -80,7 +79,7 @@ class Ability < ApplicationRecord
   
   # used to check if a static ability is currently active
   def active?
-    return true if condition.empty?
+    return true if condition.blank?
     method, args = condition.first
     
     case method
@@ -105,8 +104,8 @@ class Ability < ApplicationRecord
   end
   
   def damage(amount)
+    card.power = amount
     get_targets.each do |target|
-      card.power = amount
       card.assign_damage(target)
     end
   end
@@ -187,5 +186,12 @@ class Ability < ApplicationRecord
   def game
     card.controller.game
   end
-
+  
+  def discard(args)
+    case args['player']
+    when 'target'
+      card.args[:target].discard(args['amount'])
+    end
+    
+  end
 end

@@ -270,13 +270,13 @@ class Game
     priority_player
   end
   
-  def trigger(event, *args)
+  def trigger(event, args = nil)
     triggers.dup.each do |ability|
       # look for registered triggered abilities that should trigger now
-      if ability.trigger == event.to_s
-        
+      if event.to_s.in? [ability.trigger, ability.trigger.try(:keys).try(:first)]
         # 603.3a A triggered ability is controlled by the player who controlled its source at the time it triggered
         ability.controller = ability.card.controller
+        ability.card.args = args
         ability.controller.triggers << ability
         triggers.delete(ability)
       end
@@ -291,7 +291,9 @@ class Game
   
   def register(triggered_ability)
     triggered_ability = [triggered_ability] unless triggered_ability.is_a?(Array)
-    self.triggers += triggered_ability
+    triggered_ability.each do |trigger|
+      self.triggers << trigger unless triggers.include?(trigger)
+    end
   end
 
   def cards
