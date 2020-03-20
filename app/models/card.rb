@@ -43,9 +43,10 @@ class Card < ApplicationRecord
       active_effects_with(state).present? || !!self.send(state)
     end
   end
-
+  
   attr_accessor :owner, :zone
   attr_accessor :damage, :deathtouch_damage
+  attr_accessor :options, :activated_abilities
   
   has_many :abilities
   
@@ -115,7 +116,6 @@ class Card < ApplicationRecord
   end
   
   #### TRAITS:
-  
   def method_missing(method, *args, &block)
     type = method[/^is_([a-z]+)\?/, 1]
     if type
@@ -156,7 +156,6 @@ class Card < ApplicationRecord
   end
   
   ### COMBAT:
-  
   def attack(target)
     return false unless is_creature?
     return false if tapped
@@ -278,6 +277,7 @@ class Card < ApplicationRecord
     first_strike? || double_strike?
   end
   
+  ### ABILITTIES:
   def triggered_abilities
     abilities.filter(&:triggered)
   end
@@ -285,11 +285,13 @@ class Card < ApplicationRecord
   def active_effects_with(attribute)
     effects   = []
     attribute = attribute.to_s
-    active_static_abilities.each do |ability|
+    
+    (active_static_abilities + activated_abilities).each do |ability|
       ability.effect.each_pair do |effect, value|
         effects << value if effect == attribute
       end
     end
+    
     effects
   end
   
@@ -312,15 +314,11 @@ class Card < ApplicationRecord
     
     self.damage = 0
     self.deathtouch_damage = 0
+    self.activated_abilities = []
   end
   
   def game
     (controller || zone).game
   end
 end
-
-# A:SP$ ChangeZone | Cost$ 1 B | Origin$ Graveyard | Destination$ Hand | TargetMin$ 0 | TargetMax$ 2 | TgtPrompt$ Choose target creature card in your graveyard | ValidTgts$ Creature.YouOwn | SpellDescription$ Return up to two target creature cards from your graveyard to your hand, then discard a card. | SubAbility$ DBDiscard
-# SVar:DBDiscard:DB$Discard | Defined$ You | NumCards$ 1 | Mode$ TgtChoose
-# DeckHints:Ability$Graveyard & Ability$Discard
-# DeckHas:Ability$Discard
 

@@ -118,7 +118,9 @@ class Player
     battlefield.each(&:end_of_combat)
   end
   
-  def play_card(card, *args)
+  def play_card(card, **options)
+    # if it turns out options are only used for ':target' I need to simplify
+    # if they are used for something else I need to remove these remarks
     return false unless can_play?(card)
     
     mana_pool.pay_mana(card.mana_cost)
@@ -129,7 +131,7 @@ class Player
       card.move game.battlefield
       add_triggers_to_stack if triggers.present?
     else
-      card.args = args
+      card.options = options
       game.stack.add card
     end
     

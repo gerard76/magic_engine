@@ -14,7 +14,7 @@ class Ability < ApplicationRecord
     end
   end
 
-  attr_accessor :controller
+  attr_accessor :controller, :options
   
   # cost for activated ability
   serialize :cost, JSON
@@ -22,12 +22,15 @@ class Ability < ApplicationRecord
   serialize :duration, JSON
   serialize :condition, JSON
   
-  # activated abilities
-  
-  def activate
+  # activated abilities. options can be used for targetting and such
+  def activate(**options)
+    # options are the same as  with 'Player#play_card'
     return false unless activation == 'activated'
+    
+    self.options = options
+    
     if card.is_sorcery? || card.is_instant?
-      pay &&  resolve
+      pay && resolve
     else
       pay && play
     end
@@ -67,20 +70,24 @@ class Ability < ApplicationRecord
   
   def play
     method, args = effect.first
+    
     case method
     when 'mana' # mana abilities do not use the stack
       resolve
     else
-      game.stack.add(method, args)
+      game.stack.add self
     end
   end
   
   def resolve
-    method, args = effect.first
-    if Card::STATES.include?(method.to_sym)
-      card.send("#{method}=", args)
-    else
-      send(method, args)
+    effect.each do |method, args|
+      # method, args = e.first
+      # byebug
+      if Card::STATES.include?(method.to_sym)
+        card.send("#{method}=", args)
+      else
+        send(method, args)
+      end
     end
   end
   
@@ -126,7 +133,11 @@ class Ability < ApplicationRecord
   
   def damage(amount)
     card.power = amount
-    get_targets.each do |target|
+    
+    targets = card.options[:target]
+    targets = [targets] unless targets.is_a?(Array)
+    
+    targets.each do |target|
       card.assign_damage(target)
     end
   end
@@ -138,15 +149,14 @@ class Ability < ApplicationRecord
   end
   
   def power(args)
-    symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
-    symbol = "=" if symbol.empty?
-    card.power.send(symbol, value.to_i)
+   target = options[:target] || card
+   # I think this need to be retought for abilities that affect multiple cards
+   target.activated_abilities << self unless self.in?(target.abilities)
   end
   
   def toughness(args)
-    symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
-    symbol = "=" if symbol.empty?
-    card.toughness.send(symbol, value.to_i)
+    target = options[:target] || card
+    target.abilities << self unless self.in?(target.abilities)
   end
   
   def draw(args)
@@ -188,12 +198,6 @@ class Ability < ApplicationRecord
     cards.size
   end
   
-  def get_targets
-    targets = card.args
-    targets = [targets] unless targets.is_a?(Array)
-    targets
-  end
-  
   def get_possible_targets(args)
     battlefield = game.battlefield
     case args['type']
@@ -215,7 +219,7 @@ class Ability < ApplicationRecord
   def discard(args)
     case args['player']
     when 'target'
-      card.args[:target].discard(args['amount'])
+      card.options[:target].discard(args['amount'])
     end
     
   end

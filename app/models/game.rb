@@ -7,7 +7,7 @@ class Game
                 
   attr_accessor :players, :active_player, :priority_player, :turn
   
-  attr_accessor :triggers
+  attr_accessor :triggers, :abilities
   
   workflow do
     # Untap, Upkeep, Draw, Main1, Declare Attackers, Declare Blockers, Main2, End of Turn, and Cleanup
@@ -270,13 +270,13 @@ class Game
     priority_player
   end
   
-  def trigger(event, args = nil)
+  def trigger(event, **options)
     triggers.dup.each do |ability|
       # look for registered triggered abilities that should trigger now
       if event.to_s.in? [ability.trigger, ability.trigger.try(:keys).try(:first)]
         # 603.3a A triggered ability is controlled by the player who controlled its source at the time it triggered
         ability.controller = ability.card.controller
-        ability.card.args = args
+        ability.card.options = options
         ability.controller.triggers << ability
         triggers.delete(ability)
       end
@@ -286,16 +286,21 @@ class Game
         triggers.delete(ability)
       end
     end
+  end
+  
+  def register(abilities)
+    abilities = [abilities] unless abilities.is_a?(Array)
+    abilities.filter(&:triggered).each do |ability|
+      # mss moeten alle abilities wel op 1 hoop?
+      if ability.triggered
+        self.triggers << ability unless ability.in?(triggers)
+      else
+        self.abilities << ability unless ability.in?(abilities)
+      end
+    end
     
   end
   
-  def register(triggered_ability)
-    triggered_ability = [triggered_ability] unless triggered_ability.is_a?(Array)
-    triggered_ability.each do |trigger|
-      self.triggers << trigger unless triggers.include?(trigger)
-    end
-  end
-
   def cards
     players.map(&:cards).flatten
   end

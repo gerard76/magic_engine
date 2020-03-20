@@ -12,7 +12,7 @@ describe 'Cards' do
   end
   
   describe 'Shock' do
-    # Shock deals 2 damage to any target.
+    # Shock deals 2 damage to any target
     let(:card) { build :instant, name: 'Shock', owner: player }
     
     before do
@@ -23,8 +23,13 @@ describe 'Cards' do
     end
     
     it 'hurts' do
-      expect{ player.play_card(player.hand.last, player) }.to change{
+      expect{ player.play_card(player.hand.last, target: player) }.to change{
         player.life }.by(-2)
+    end
+    
+    it 'ends up in the players graveyard' do
+      player.play_card(card, target: player)
+      expect(card.zone).to eql(player.graveyard)
     end
   end
   
@@ -138,7 +143,6 @@ describe 'Cards' do
     end
     
     it 'forces discard when damaging a player' do
-      # damage komt bij triggers van controller, maar die gaan niet op de stack
       expect(player).to receive(:discard).with(1)
       card.assign_damage(player)
       game.pass_priority
@@ -169,6 +173,35 @@ describe 'Cards' do
     it 'ends up in the players graveyard' do
       player.play_card(card)
       expect(card.zone).to eql(player.graveyard)
+    end
+  end
+  
+  describe 'Angelic Page' do
+    # Flying
+    # {T}: Target attacking or blocking creature gets +1/+1 until end of turn.
+    let(:card)    { build :creature, name: 'Angelic Page', mana_cost: '{1}{W}', power: 1, toughness: 1 }
+    let(:ability) { build(:activated_ability, cost: :tap,
+                      effect: {
+                        power:     "+1",
+                        toughness: "+1" },
+                      duration: :end_of_turn)}
+    let(:creature) { build :creature, power: 1, toughness: 1 }
+    
+    before do
+      card.abilities << ability
+      player.hand << card
+      player.play_card(card)
+    end
+    
+    it 'gives target creature +1/+1' do
+      ability.activate(target: creature)
+      expect(creature.current_power).to eql(2)
+      expect(creature.current_toughness).to eql(2)
+    end
+    
+    it 'does not give give the card self +1' do
+      ability.activate(target: creature)
+      expect(card.current_power.to_i).to be(1)
     end
   end
 end
