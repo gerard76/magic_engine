@@ -58,11 +58,12 @@ class ManaPool
     true
   end
   
-  def can_pay?(mana_string, x = 0)
-    return true if mana_string.blank?
-    mana_array   = convert_mana_string(mana_string)
-    generic_mana = to_pay_generic(mana_array, x)
-    color_mana   = to_pay_color(mana_array)
+  def can_pay?(mana, x = 0)
+    return true if mana.blank?
+    mana_hash    = convert_mana_string(mana) if mana.is_a?(String)
+    
+    generic_mana = to_pay_generic(mana_hash, x)
+    color_mana   = to_pay_color(mana_hash)
     
     color_mana.each do |color, amount|
       return false if color.split('/').all? { |c| @pool[c] < amount } # split for multicolor
@@ -72,9 +73,9 @@ class ManaPool
     true
   end
   
-  def to_pay_color(mana_array)
+  def to_pay_color(mana_hash)
     pay = {}
-    mana_array.each do |color, amount|
+    mana_hash.each do |color, amount|
       next if color.to_s.numeric?
       next if color == 'x'
       
@@ -83,9 +84,9 @@ class ManaPool
     pay
   end
   
-  def to_pay_generic(mana_array, x)
+  def to_pay_generic(mana_hash, x)
     generic = 0
-    mana_array.each do |color, amount|
+    mana_hash.each do |color, amount|
       (generic += color.to_i) && next if color.to_s.numeric?
       (generic += x && next) if color == 'x'
     end
