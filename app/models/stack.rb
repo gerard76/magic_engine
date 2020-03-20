@@ -41,8 +41,8 @@ class Stack
   
   def resolve_card(card)
     if card.is_instant? || card.is_sorcery?
-      card.abilities.first.resolve # remove all but the chosen ability from the card when put on stack
-      # TODO: then goto graveyard?
+      card.abilities.first.activate # remove all but the chosen ability from the card when put on stack?
+      card.controller.graveyard << card
     else
       @game.battlefield << card
     end

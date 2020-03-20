@@ -144,4 +144,31 @@ describe 'Cards' do
       game.pass_priority
     end
   end
+  
+  describe "Ambition's Cost" do
+    # You draw three cards and you lose 3 life.
+    let(:card) { build :sorcery, name: "Ambition's Cost", owner: player }
+    
+    before do
+      card.abilities << build(:activated_ability,
+                          cost:   { life: 3 },
+                          effect: { draw: 3 } )
+      player.hand << card
+    end
+    
+    it 'costs 3 life' do
+      expect{ player.play_card(card) }.to change{ player.life }.by(-3)
+    end
+    
+    it 'allows you to draw 3 cards' do
+      3.times { player.library << build(:card) }
+      # play 1 draw 3
+      expect{ player.play_card(card) }.to change{ player.hand.size }.by(2)
+    end
+    
+    it 'ends up in the players graveyard' do
+      player.play_card(card)
+      expect(card.zone).to eql(player.graveyard)
+    end
+  end
 end

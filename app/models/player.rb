@@ -83,7 +83,8 @@ class Player
     card.playable_zones.include?(card.zone&.name) &&
       mana_pool.can_pay?(card.mana_cost) &&
       card.owner == self &&
-      (!card.is_land? || !!!@cards_played_this_turn.detect(&:is_land?))
+      (!card.is_land? || !!!@cards_played_this_turn.detect(&:is_land?)) &&
+      ((!card.is_sorcery? && !card.is_instant?) || card.abilities.first.can_pay?)
   end
   
   def declare_attacker(card, target)

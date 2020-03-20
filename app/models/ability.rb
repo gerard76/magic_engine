@@ -26,21 +26,42 @@ class Ability < ApplicationRecord
   
   def activate
     return false unless activation == 'activated'
-    pay && play
+    if card.is_sorcery? || card.is_instant?
+      pay &&  resolve
+    else
+      pay && play
+    end
+  end
+  
+  def can_pay?
+    # 'cost' without 'self' gives weird results
+    cost = self.cost
+    cost, args = cost.first if cost.is_a?(Hash)
+    
+    case cost
+    when 'tap'
+      card.untapped
+    when 'mana'
+      color, amount = args.first
+      mana_pool.can_pay?(args)
+    when 'life'
+      card.controller.life > args
+    end
   end
   
   def pay
     # 'cost' without 'self' gives weird results
-    if self.cost.is_a?(Hash)
-      cost, args = cost.first
-    end
+    cost = self.cost
+    cost, args = cost.first if cost.is_a?(Hash)
     
-    case self.cost
+    case cost
     when 'tap'
       card.tap_it
     when 'mana'
       color, amount = args.first
       card.controller.pay_mana(color, amount)
+    when 'life'
+      card.controller.life -= args
     end
   end
   
@@ -126,6 +147,10 @@ class Ability < ApplicationRecord
     symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
     symbol = "=" if symbol.empty?
     card.toughness.send(symbol, value.to_i)
+  end
+  
+  def draw(args)
+    controller.draw args
   end
   
   ### CONDITIONS:
