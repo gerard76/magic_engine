@@ -28,6 +28,7 @@ class Card < ApplicationRecord
     double_strike
     first_strike
     deathtouch
+    vigilance
     
     cant_be_attacked
   )
@@ -165,10 +166,9 @@ class Card < ApplicationRecord
     target.attacker = self if target.is_a?(Card) # planeswalker
     
     # 508.1f The active player taps the chosen creatures
-    tap_it
+    tap_it unless vigilance?
     
-    # TODO
-    # trigger on declaring attacker
+    true
   end
   
   def block(target)

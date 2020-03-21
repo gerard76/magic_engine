@@ -208,4 +208,20 @@ describe 'Cards' do
       expect(creature.current_power).to eql(1)
     end
   end
+  
+  describe 'Ardent Militia' do
+    # Vigilance
+    let(:card) { build :creature, owner: player }
+    
+    before do
+      card.abilities << build(:static_ability, effect: { vigilance: true })
+    end
+    
+    it 'does not tap when attacking' do
+      game.send(:persist_workflow_state, :declare_attackers)
+      expect(player.declare_attacker(card, player)).to be_truthy
+      expect(card).to_not be_tapped
+      expect(card.attacking).to_not be_nil
+    end
+  end
 end
