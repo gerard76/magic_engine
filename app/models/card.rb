@@ -286,9 +286,19 @@ class Card < ApplicationRecord
     effects   = []
     attribute = attribute.to_s
     
-    (active_static_abilities + activated_abilities).each do |ability|
+    # abilities attached to card
+    active_static_abilities.each do |ability|
       ability.effect.each_pair do |effect, value|
         effects << value if effect == attribute
+      end
+    end
+    
+    # abilities registered to game that might affect card
+    game.active_abilities.each do |ability|
+      if ability.affects?(self)
+        ability.effect.each_pair do |effect, value|
+          effects << value if effect == attribute
+        end
       end
     end
     

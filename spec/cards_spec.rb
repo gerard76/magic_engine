@@ -179,29 +179,33 @@ describe 'Cards' do
   describe 'Angelic Page' do
     # Flying
     # {T}: Target attacking or blocking creature gets +1/+1 until end of turn.
-    let(:card)    { build :creature, name: 'Angelic Page', mana_cost: '{1}{W}', power: 1, toughness: 1 }
+    let(:card)    { build :creature, name: 'Angelic Page', owner: player, power: 1, toughness: 1 }
     let(:ability) { build(:activated_ability, cost: :tap,
                       effect: {
                         power:     "+1",
                         toughness: "+1" },
-                      duration: :end_of_turn)}
-    let(:creature) { build :creature, power: 1, toughness: 1 }
+                      expire: :end_of_turn) }
+    let(:creature) { build :creature, power: 1, toughness: 1, owner: player }
     
     before do
       card.abilities << ability
       player.hand << card
       player.play_card(card)
+      ability.activate(target: creature)
     end
     
     it 'gives target creature +1/+1' do
-      ability.activate(target: creature)
       expect(creature.current_power).to eql(2)
       expect(creature.current_toughness).to eql(2)
     end
     
     it 'does not give give the card self +1' do
-      ability.activate(target: creature)
       expect(card.current_power.to_i).to be(1)
+    end
+    
+    it 'stops pump when turn ends' do
+      game.trigger(:end_of_turn)
+      expect(creature.current_power).to eql(1)
     end
   end
 end

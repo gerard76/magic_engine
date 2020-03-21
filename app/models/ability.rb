@@ -85,8 +85,11 @@ class Ability < ApplicationRecord
       # byebug
       if Card::STATES.include?(method.to_sym)
         card.send("#{method}=", args)
-      else
+      elsif self.respond_to?(method, true)
         send(method, args)
+      else
+        # for abilitities that affect card properties
+        game.register self
       end
     end
   end
@@ -120,6 +123,19 @@ class Ability < ApplicationRecord
     card.controller
   end
   
+  def affects?(target)
+    return false unless options.try("[]", :target)
+    affecting = options[:target]
+    
+    return true if affecting == target
+    
+    if affecting.is_a?(Array)
+      return true if affecting.include?(target)
+    end
+    
+    false
+  end
+  
   private
   
   ### EFFECTS:
@@ -146,17 +162,6 @@ class Ability < ApplicationRecord
     symbol, value = args.match(/([^0-9]*)([0-9]+)/)[1..2]
     symbol = "=" if symbol.empty?
     controller.life = controller.life.send(symbol, value.to_i)
-  end
-  
-  def power(args)
-   target = options[:target] || card
-   # I think this need to be retought for abilities that affect multiple cards
-   target.activated_abilities << self unless self.in?(target.abilities)
-  end
-  
-  def toughness(args)
-    target = options[:target] || card
-    target.abilities << self unless self.in?(target.abilities)
   end
   
   def draw(args)

@@ -7,7 +7,7 @@ class Game
                 
   attr_accessor :players, :active_player, :priority_player, :turn
   
-  attr_accessor :triggers, :abilities
+  attr_accessor :active_abilities
   
   workflow do
     # Untap, Upkeep, Draw, Main1, Declare Attackers, Declare Blockers, Main2, End of Turn, and Cleanup
@@ -65,9 +65,6 @@ class Game
       # 500.4 When a step or phase ends, any unused mana left in a player’s mana pool empties.
       @active_player.empty_mana_pool
       
-      # 500.5 effects scheduled to last “until end of” that phase or step expire
-      expire_effect(:end_of, from)
-      
       trigger "end_of_#{phase}"
     end
   end
@@ -77,7 +74,7 @@ class Game
     
     @stack = Stack.new(self)
     
-    @triggers  = []
+    @active_abilities  = []
     @battlefield = Zone.new(:battlefield, self)
     
     ## PLAYERS:
@@ -231,12 +228,6 @@ class Game
     end
   end
   
-  def expire_effect(lasts, phase)
-    active_effects.reject! do |e|
-      e.phase == phase && e.lasts == lasts
-    end
-  end
-  
   def playing?
     playing = players.reject(&:dead?)
     return true if players.size == 1 && playing.size > 0
@@ -271,34 +262,28 @@ class Game
   end
   
   def trigger(event, **options)
-    triggers.dup.each do |ability|
+    active_abilities.dup.each do |ability|
       # look for registered triggered abilities that should trigger now
       if event.to_s.in? [ability.trigger, ability.trigger.try(:keys).try(:first)]
         # 603.3a A triggered ability is controlled by the player who controlled its source at the time it triggered
         ability.controller = ability.card.controller
         ability.card.options = options
         ability.controller.triggers << ability
-        triggers.delete(ability)
+        active_abilities.delete(ability)
       end
       
       # look for triggers that should expire now
       if ability.expire == event.to_s
-        triggers.delete(ability)
+        active_abilities.delete(ability)
       end
     end
   end
   
   def register(abilities)
     abilities = [abilities] unless abilities.is_a?(Array)
-    abilities.filter(&:triggered).each do |ability|
-      # mss moeten alle abilities wel op 1 hoop?
-      if ability.triggered
-        self.triggers << ability unless ability.in?(triggers)
-      else
-        self.abilities << ability unless ability.in?(abilities)
-      end
+    abilities.each do |ability|
+      self.active_abilities << ability unless ability.in?(active_abilities)
     end
-    
   end
   
   def cards

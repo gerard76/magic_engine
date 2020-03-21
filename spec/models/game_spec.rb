@@ -105,7 +105,7 @@ describe Game do
     describe '#register_trigger' do
       it 'registers the trigger' do
         expect{ game.register(trigger) }.to change{
-           game.triggers.size }.by(1)
+           game.active_abilities.size }.by(1)
       end
     end
     

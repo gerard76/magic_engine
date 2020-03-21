@@ -125,8 +125,8 @@ describe Player do
   
   describe '#declare_blocker' do
     let(:blocking_player) { build :player }
-    let(:attacker)        { build :creature, attacking: blocking_player }
-    let(:blocker)         { build :creature, controller: blocking_player }
+    let(:attacker)        { build :creature, attacking: blocking_player, owner: player }
+    let(:blocker)         { build :creature, owner: blocking_player }
     let(:game)            { build :game, players: [player, blocking_player] }
     
     before do

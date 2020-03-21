@@ -142,7 +142,7 @@ describe Card do
   
   describe '#block' do
     let(:player)   { build :player }
-    let(:attacker) { build :card, attacking: player }
+    let(:attacker) { build :card, attacking: player, owner: player }
 
     it 'returns true when all is well' do
       expect(card.block(attacker)).to be_truthy
