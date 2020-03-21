@@ -2,6 +2,7 @@ class ManaPool
   # Colorless, Black, Green, Blue, Red, White
   # TODO snow!
   COLORS = {
+    generic:   'x', 
     colorless: 'c',
     plains:    'w',
     swamp:     'b',
@@ -32,29 +33,27 @@ class ManaPool
     initialize
   end
   
-  # TODO I do not like this mana string. maybe convert before calling mana pool?
   def pay_mana(mana_string, x = 0)
     return true if mana_string.blank?
     return false unless can_pay?(mana_string)
     
-    mana_array = convert_mana_string(mana_string)
+    mana_hash = convert_mana_string(mana_string)
     
-    # pay color
-    to_pay_color(mana_array).each { |color, amount| pay(color, amount) }
-    
-    # pay generic
-    generic = to_pay_generic(mana_array, x)
-    
-    if generic > 0
-      # colorless is first in pool, so that is spend first
-      @pool.each_pair do |color, amount|
-        amount = [generic, amount].min
+    mana_hash.each do |color, amount| 
+      if color == 'x'
+        generic = amount
+        @pool.each do |color, amount|
+          amount = [generic, amount].min
+          pay(color, amount)
+          generic -= amount
+          
+          break unless generic > 0
+        end
+      else
         pay(color, amount)
-        generic -= amount
-      
-        break unless generic > 0
       end
     end
+    
     true
   end
   
@@ -62,13 +61,15 @@ class ManaPool
     return true if mana.blank?
     mana_hash    = convert_mana_string(mana) if mana.is_a?(String)
     
-    generic_mana = to_pay_generic(mana_hash, x)
-    color_mana   = to_pay_color(mana_hash)
-    
-    color_mana.each do |color, amount|
-      return false if color.split('/').all? { |c| @pool[c] < amount } # split for multicolor
+    mana_hash.each do |color, amount|
+      if color == 'x'
+        return false if amount > total_mana # check generic mana against total mana
+      else
+        return false if color.split('/').all? { |c| @pool[c] < amount } # split for multicolor
+      end
     end
-    return false if (generic_mana + color_mana.values.sum) > total_mana
+    
+    return false if mana_hash.values.sum > total_mana
     
     true
   end
@@ -77,7 +78,6 @@ class ManaPool
     pay = {}
     mana_hash.each do |color, amount|
       next if color.to_s.numeric?
-      next if color == 'x'
       
       pay[color] = amount
     end
@@ -103,15 +103,23 @@ class ManaPool
     @pool.values.sum
   end
   
-  private
-  
-  def convert_mana_string(mana_string)
+  def self.convert_mana_string(mana_string)
     # mana string examples:
     # {3}{B}{G}{U}
     # {X}{B}{G}{U}
     # {B/G}{R}
-    array = mana_string[1..-2].split('}{').map(&:downcase)
-    array.map { |a| a.numeric? ? a : a }.tally
+    array = mana_string[1..-2].split('}{').map(&:downcase).tally
+    #  {"3"=>1, "b"=>2, "g"=>1}
+    # put generic count in value instead of key
+    res = {}
+    array.each_pair do |key, value|
+      key.numeric? ? res['x']=key.to_i  : res[key]=value
+    end
+    res
+  end
+  
+  def convert_mana_string(mana_string)
+    ManaPool.convert_mana_string(mana_string)
   end
   
   def valid_color?(color)
