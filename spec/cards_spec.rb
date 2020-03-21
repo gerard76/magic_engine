@@ -224,4 +224,31 @@ describe 'Cards' do
       expect(card.attacking).to_not be_nil
     end
   end
+  
+  describe 'Avatar of Hope' do
+    # If you have 3 or less life, this spell costs {6} less to cast.
+    let(:card) { build(:creature, mana_cost: '{6}{W}{W}', owner: player) }
+    
+    before do
+      card.abilities << build(:static_ability,
+                          condition: {
+                            compare: { 
+                              this: :life,
+                              that: "<=3"
+                            }
+                          },
+                          effect: {
+                            mana_cost: "-6"
+                          })
+    end
+    
+    it 'costs a lot' do
+      expect(card.current_mana_cost.values.sum).to eql(8)
+    end
+    
+    it 'is on sale' do
+      player.life = 3
+      expect(card.current_mana_cost.values.sum).to eql(2)
+    end
+  end
 end

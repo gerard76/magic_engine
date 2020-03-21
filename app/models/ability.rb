@@ -178,11 +178,14 @@ class Ability < ApplicationRecord
     this = args['this']
     that = args['that']
     
-    method, args = this.first
+    method = this
+    method, args = method.first if method.is_a?(Hash)
     
     this = case method
     when 'count'
       count args
+    when 'life'
+      card.controller.life
     end
   
     operation, value = that.match(/([^0-9]*)([0-9]+)/)[1..2]

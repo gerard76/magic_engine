@@ -273,6 +273,18 @@ class Card < ApplicationRecord
     current_toughness
   end
   
+  def current_mana_cost
+    current_mana_cost = ManaPool.convert_mana_string(mana_cost)
+    
+    active_effects_with(:mana_cost).each do |operation|
+      symbol, value = operation.match(/([^0-9]*)([0-9]+)/)[1..2]
+      symbol = "=" if symbol.empty?
+      current_mana_cost['x'] = current_mana_cost['x'].send(symbol, value.to_i)
+    end
+    
+    current_mana_cost
+  end
+  
   def strikes_first?
     first_strike? || double_strike?
   end
