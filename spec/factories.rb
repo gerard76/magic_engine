@@ -34,7 +34,7 @@ FactoryBot.define do
     
     factory :creature do
       types { [:creature] }
-      power { rand(0..5) }
+      power { rand(1..5) }
       toughness { rand(1..5) }
     end
     
