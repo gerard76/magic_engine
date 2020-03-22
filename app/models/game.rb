@@ -264,10 +264,10 @@ class Game
   def trigger(event, **options)
     active_abilities.dup.each do |ability|
       # look for registered triggered abilities that should trigger now
-      if event.to_s.in? [ability.trigger, ability.trigger.try(:keys).try(:first)]
+      if ability.triggers_with?(event, options)
         # 603.3a A triggered ability is controlled by the player who controlled its source at the time it triggered
         ability.controller = ability.card.controller
-        ability.card.options = options
+        ability.options    = options
         ability.controller.triggers << ability
       end
       

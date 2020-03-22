@@ -136,6 +136,26 @@ class Ability < ApplicationRecord
     false
   end
   
+  def triggers_with?(event, options)
+    trigger_event, trigger_options = trigger.first if trigger.is_a?(Hash)
+    
+    if event.to_s.in? [trigger, trigger_event]
+      if trigger_options
+        case trigger_options['source']
+        when 'self'
+          return false unless options[:source] == card
+        end
+        
+        case trigger_options['target']
+        when 'player'
+          return false unless options[:target].is_a?(Player)
+        end
+      end
+      return true
+    end
+    false
+  end
+  
   private
   
   ### EFFECTS:
@@ -227,7 +247,7 @@ class Ability < ApplicationRecord
   def discard(args)
     case args['player']
     when 'target'
-      card.options[:target].discard(args['amount'])
+      options[:target].discard(args['amount'])
     end
     
   end

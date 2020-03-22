@@ -153,6 +153,12 @@ describe 'Cards' do
       2.times { card.assign_damage(player)
                 game.pass_priority }
     end
+    
+    it 'does not react to other damage' do
+      expect(player).to_not receive(:discard)
+      build(:creature, owner: player).assign_damage(player)
+      game.pass_priority
+    end
   end
   
   describe "Ambition's Cost" do
