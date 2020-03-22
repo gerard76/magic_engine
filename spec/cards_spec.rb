@@ -263,4 +263,26 @@ describe 'Cards' do
       expect(card.current_mana_cost.values.sum).to eql(2)
     end
   end
+  
+  describe 'Aven Cloudchaser' do
+    # When Aven Cloudchaser enters the battlefield, destroy target enchantment.
+    let(:card) { build(:creature, name: 'Aven Cloudchaser', mana_cost: '{3}{W}', owner: player)}
+    
+    before do
+      card.abilities << build(:triggered_ability,
+                          effect: { destroy: :enchantment },
+                          trigger: :enter_battlefield )
+    end
+    
+    it 'destroys chosen enchantment' do
+      enchantment = build(:enchantment, owner: player)
+      player.hand << enchantment
+      player.hand << card
+      player.play_card(enchantment)
+      expect(enchantment.zone.name).to eql(:battlefield)
+
+      expect { player.play_card(card, target: enchantment)}.to change {
+        enchantment.zone.name}.from(:battlefield).to(:graveyard)
+    end
+  end
 end

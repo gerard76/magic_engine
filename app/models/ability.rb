@@ -81,11 +81,10 @@ class Ability < ApplicationRecord
   
   def resolve
     effect.each do |method, args|
-      # method, args = e.first
-      # byebug
       if Card::STATES.include?(method.to_sym)
         card.send("#{method}=", args)
       elsif self.respond_to?(method, true)
+        method = 'destroy_it' if method == 'destroy' # hack to not clash with Rails' method
         send(method, args)
       else
         # for abilitities that affect card properties
@@ -250,6 +249,14 @@ class Ability < ApplicationRecord
     when 'target'
       options[:target].discard(args['amount'])
     end
+  end
+  
+  def destroy_it(args)
+    targets = card.options[:target]
+    targets = [targets] unless targets.is_a?(Array)
     
+    targets.each do |target|
+      target.move(card.owner.graveyard)
+    end
   end
 end

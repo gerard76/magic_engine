@@ -49,6 +49,10 @@ FactoryBot.define do
     factory :sorcery do
       types { [:sorcery] }
     end
+    
+    factory :enchantment do
+      types { [:enchantment] }
+    end
   end
   
   factory :deck do
