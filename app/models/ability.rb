@@ -151,7 +151,8 @@ class Ability < ApplicationRecord
           return false unless options[:target].is_a?(Player)
         end
       end
-      return true
+      return true unless options[:source]
+      return true if options[:source] == card
     end
     false
   end
