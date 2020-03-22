@@ -20,7 +20,7 @@ class Zone
     if card.triggered_abilities.present? && name == :hand
       @game.register(card.triggered_abilities)
     end
-    @game.trigger("enter_#{name}")
+    @game.trigger("enter_#{name}", source: card)
   end
   
   def delete(card)
