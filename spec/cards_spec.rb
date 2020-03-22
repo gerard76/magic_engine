@@ -147,6 +147,12 @@ describe 'Cards' do
       card.assign_damage(player)
       game.pass_priority
     end
+    
+    it 'can trigger multiple times' do
+      expect(player).to receive(:discard).twice.with(1)
+      2.times { card.assign_damage(player)
+                game.pass_priority }
+    end
   end
   
   describe "Ambition's Cost" do

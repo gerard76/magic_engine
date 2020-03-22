@@ -269,7 +269,6 @@ class Game
         ability.controller = ability.card.controller
         ability.card.options = options
         ability.controller.triggers << ability
-        active_abilities.delete(ability)
       end
       
       # look for triggers that should expire now
